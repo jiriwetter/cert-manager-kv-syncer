@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0c4257f-ac60-4cc3-ac85-d849e9c3110f" name="Changes" comment="Init version">
+    <list default="true" id="c0c4257f-ac60-4cc3-ac85-d849e9c3110f" name="Changes" comment="Overwrite protection + comments">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sre-local-certificate-sync.py" beforeDir="false" afterPath="$PROJECT_DIR$/sre-local-certificate-sync.py" afterDir="false" />
     </list>
@@ -23,22 +23,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="2rtsd2o7VdjFT6656QhoghrgMeS" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.sre-local-certificate-sync.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.sre-local-certificate-sync.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="sre-local-certificate-sync" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="sre-certificate-sync" />
@@ -93,11 +93,20 @@
       <option name="project" value="LOCAL" />
       <updated>1737391206330</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Overwrite protection + comments">
+      <option name="closed" value="true" />
+      <created>1737395755358</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1737395755358</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Init version" />
-    <option name="LAST_COMMIT_MESSAGE" value="Init version" />
+    <MESSAGE value="Overwrite protection + comments" />
+    <option name="LAST_COMMIT_MESSAGE" value="Overwrite protection + comments" />
   </component>
 </project>
