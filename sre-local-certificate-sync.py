@@ -229,7 +229,7 @@ def main():
     logging.info(f"Starting certificate sync process. Running every {SYNC_INTERVAL} seconds.")
 
     while True:
-        certificates = get_certificates()  # Corrected call
+        certificates = get_certificates()
 
         for certificate in certificates:
             secret_name = certificate["spec"]["secretName"]

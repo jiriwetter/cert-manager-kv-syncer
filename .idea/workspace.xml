@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0c4257f-ac60-4cc3-ac85-d849e9c3110f" name="Changes" comment="While loop check with time specification">
+    <list default="true" id="c0c4257f-ac60-4cc3-ac85-d849e9c3110f" name="Changes" comment="Namespace include/exclude logic">
+      <change afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sre-local-certificate-sync.py" beforeDir="false" afterPath="$PROJECT_DIR$/sre-local-certificate-sync.py" afterDir="false" />
     </list>
@@ -32,13 +34,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.sre-local-certificate-sync.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.sre-local-certificate-sync.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "settings.editor.selected.configurable": "inlay.hints"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <recent_temporary>
       <list>
@@ -102,7 +105,15 @@
       <option name="project" value="LOCAL" />
       <updated>1738580898845</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Namespace include/exclude logic">
+      <option name="closed" value="true" />
+      <created>1738588276811</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1738588276811</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -122,6 +133,7 @@
     <MESSAGE value="Better loging, certificate name mapping" />
     <MESSAGE value="Logging improvement, dry run capability, name mapping logic improvement" />
     <MESSAGE value="While loop check with time specification" />
-    <option name="LAST_COMMIT_MESSAGE" value="While loop check with time specification" />
+    <MESSAGE value="Namespace include/exclude logic" />
+    <option name="LAST_COMMIT_MESSAGE" value="Namespace include/exclude logic" />
   </component>
 </project>
