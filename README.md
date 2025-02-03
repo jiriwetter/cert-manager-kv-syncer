@@ -1,4 +1,4 @@
-# SRE Certificate Sync Tool
+# Certificate Sync Tool
 
 ## Overview
 Tool automates the synchronization of TLS certificates from Kubernetes Secrets to Azure Key Vault. It ensures that certificates stored in Kubernetes are securely propagated to Key Vault, maintaining consistency across environments.
