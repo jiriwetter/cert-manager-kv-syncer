@@ -1,5 +1,6 @@
 import logging
 import datetime
+from time import sleep
 from kubernetes import client, config
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.certificates import CertificateClient
@@ -10,6 +11,8 @@ from cryptography.hazmat.backends import default_backend
 import base64
 import os
 
+# Read synchronization interval from environment variables (default: 300 seconds)
+SYNC_INTERVAL = int(os.getenv("SYNC_INTERVAL", 300))
 
 # Read logging levels from environment variables or use defaults
 DEFAULT_LOGGING_LEVEL = os.getenv("DEFAULT_LOGGING_LEVEL", "INFO").upper()
@@ -152,29 +155,29 @@ def main():
         logging.error("Missing environment variable AZURE_KEYVAULT_URL. Exiting.")
         return
 
-    certificates = get_certificates(namespace)
-    for certificate in certificates:
-        secret_name = certificate["spec"]["secretName"]
-        certificate_name = get_certificate_name(secret_name)
+    logging.info(f"Starting certificate sync process. Running every {SYNC_INTERVAL} seconds.")
 
-        if STRICT_NAME_MAPPING and certificate_name is None:
-            logging.info(f"Skipping secret '{secret_name}' because it is not in NAME_MAPPING.")
-            continue
+    while True:
+        certificates = get_certificates(namespace)
+        for certificate in certificates:
+            secret_name = certificate["spec"]["secretName"]
+            certificate_name = get_certificate_name(secret_name)
 
-        logging.info(f"Processing certificate: {certificate['metadata']['name']}")
-        secret = get_secret(namespace, secret_name)
-        cert = base64.b64decode(secret.data["tls.crt"]).decode("utf-8")
-        key = base64.b64decode(secret.data["tls.key"]).decode("utf-8")
+            if STRICT_NAME_MAPPING and certificate_name is None:
+                logging.warning(f"Skipping secret '{secret_name}' because it is not in NAME_MAPPING.")
+                continue
 
-        if DRY_RUN:
-            logging.info(f"[DRY RUN] Would process certificate '{certificate_name}'.")
+            logging.info(f"Processing certificate: {certificate['metadata']['name']}")
+            secret = get_secret(namespace, secret_name)
+            cert = base64.b64decode(secret.data["tls.crt"]).decode("utf-8")
+            key = base64.b64decode(secret.data["tls.key"]).decode("utf-8")
 
-        logging.debug(f"Uploading certificate {certificate_name} to Key Vault...")
-        if upload_to_key_vault(vault_url, certificate_name, cert, key):
-            logging.info(f"Certificate {certificate_name} successfully uploaded to Key Vault.")
+            logging.debug(f"Uploading certificate {certificate_name} to Key Vault...")
+            if upload_to_key_vault(vault_url, certificate_name, cert, key):
+                logging.info(f"Certificate {certificate_name} successfully uploaded to Key Vault.")
 
-    if DRY_RUN:
-        logging.info("[DRY RUN] Execution completed. No changes were made.")
+        logging.info(f"Sync completed. Sleeping for {SYNC_INTERVAL} seconds.")
+        sleep(SYNC_INTERVAL)  # Wait before next sync
 
 
 if __name__ == "__main__":
