@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0c4257f-ac60-4cc3-ac85-d849e9c3110f" name="Changes" comment="Logging improvement, dry run capability, name mapping logic improvement">
+    <list default="true" id="c0c4257f-ac60-4cc3-ac85-d849e9c3110f" name="Changes" comment="While loop check with time specification">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sre-local-certificate-sync.py" beforeDir="false" afterPath="$PROJECT_DIR$/sre-local-certificate-sync.py" afterDir="false" />
     </list>
@@ -40,34 +40,6 @@
   }
 }</component>
   <component name="RunManager">
-    <configuration name="sre-local-certificate-sync" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="sre-certificate-sync" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="AZURE_KEYVAULT_URL" value="https://extsec-k8snp9performance.vault.azure.net" />
-        <env name="DEFAULT_LOGGING_LEVEL" value="info" />
-        <env name="DRY_RUN" value="true" />
-        <env name="PYTHONUNBUFFERED" value="1" />
-        <env name="STRICT_NAME_MAPPING" value="true" />
-        <env name="SYNC_INTERVAL" value="60" />
-        <env name="USE_NAME_MAPPING" value="true" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sre-local-certificate-sync.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Python.sre-local-certificate-sync" />
@@ -122,7 +94,15 @@
       <option name="project" value="LOCAL" />
       <updated>1738580328504</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="While loop check with time specification">
+      <option name="closed" value="true" />
+      <created>1738580898845</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1738580898845</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -141,6 +121,7 @@
     <MESSAGE value="Overwrite protection + comments" />
     <MESSAGE value="Better loging, certificate name mapping" />
     <MESSAGE value="Logging improvement, dry run capability, name mapping logic improvement" />
-    <option name="LAST_COMMIT_MESSAGE" value="Logging improvement, dry run capability, name mapping logic improvement" />
+    <MESSAGE value="While loop check with time specification" />
+    <option name="LAST_COMMIT_MESSAGE" value="While loop check with time specification" />
   </component>
 </project>

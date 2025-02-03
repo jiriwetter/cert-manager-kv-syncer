@@ -11,8 +11,27 @@ from cryptography.hazmat.backends import default_backend
 import base64
 import os
 
+
+# Feature toggle for dry run mode
+DRY_RUN = os.getenv("DRY_RUN", "false").lower() in ("true", "1", "yes", "enabled")
+
 # Read synchronization interval from environment variables (default: 300 seconds)
 SYNC_INTERVAL = int(os.getenv("SYNC_INTERVAL", 300))
+
+# Configurable options
+USE_NAME_MAPPING = os.getenv("USE_NAME_MAPPING", "false").lower() in ("true", "1", "yes", "enabled")
+STRICT_NAME_MAPPING = os.getenv("STRICT_NAME_MAPPING", "false").lower() in ("true", "1", "yes", "enabled")
+
+# Default tags (used if no specific tags are defined)
+DEFAULT_TAGS = {"managed_by": "sre-cert-sync-tool"}
+
+# Certificate configuration (maps AKS secrets to Key Vault certificates with optional tags)
+CERTIFICATE_CONFIG = {
+    "acme-crt-wildcard-test-elcare-com-secret": {
+        "cert_name": "wildcard-elcare-com",
+        "tags": {"owner": "team-networking", "project": "elcare"}
+    }
+}
 
 # Read logging levels from environment variables or use defaults
 DEFAULT_LOGGING_LEVEL = os.getenv("DEFAULT_LOGGING_LEVEL", "INFO").upper()
@@ -44,21 +63,66 @@ def timestamp():
     return str(datetime.datetime.now())
 
 
-def get_certificates(namespace):
+def parse_namespaces(env_value):
     """
-    Fetch all Certificate resources from the specified namespace.
+    Parses the SEARCH_NAMESPACES environment variable.
+    - If empty, it searches in all namespaces.
+    - If it contains "!namespace", that namespace will be excluded (only if no specific namespaces are defined).
+    - If specific namespaces are defined, "!namespace" logic is ignored.
     """
-    logging.debug(f"Fetching certificates from namespace: {namespace}")
+    raw_list = os.getenv(env_value, "").split(",") if os.getenv(env_value) else []
+
+    include_namespaces = {ns for ns in raw_list if not ns.startswith("!")}
+    exclude_namespaces = {ns[1:] for ns in raw_list if ns.startswith("!")}
+
+    # If specific namespaces are defined, ignore `!namespace` exclusion logic
+    if include_namespaces:
+        return include_namespaces, set()
+
+    return set(), exclude_namespaces
+
+
+def get_all_namespaces():
+    """
+    Retrieves a list of all namespaces in the cluster.
+    """
+    v1 = client.CoreV1Api()
+    namespaces = v1.list_namespace()
+    return [ns.metadata.name for ns in namespaces.items]
+
+
+def get_certificates():
+    """
+    Fetches certificates based on SEARCH_NAMESPACES settings.
+    """
     config.load_kube_config()
     custom_objects_api = client.CustomObjectsApi()
-    certificates = custom_objects_api.list_namespaced_custom_object(
-        group="cert-manager.io",
-        version="v1",
-        namespace=namespace,
-        plural="certificates"
-    )
-    logging.info(f"Fetched {len(certificates['items'])} certificates from namespace: {namespace}")
-    return certificates["items"]
+
+    include_namespaces, exclude_namespaces = parse_namespaces("SEARCH_NAMESPACES")
+
+    if not include_namespaces:
+        # If no specific namespaces are defined, fetch all and apply `!namespace` exclusion logic
+        all_namespaces = get_all_namespaces()
+        namespaces_to_search = [ns for ns in all_namespaces if ns not in exclude_namespaces]
+    else:
+        namespaces_to_search = list(include_namespaces)  # Use only specified namespaces
+
+    logging.info(f"Searching certificates in namespaces: {namespaces_to_search}")
+
+    all_certificates = []
+    for ns in namespaces_to_search:
+        try:
+            certs = custom_objects_api.list_namespaced_custom_object(
+                group="cert-manager.io",
+                version="v1",
+                namespace=ns,
+                plural="certificates"
+            )
+            all_certificates.extend(certs["items"])
+        except Exception as e:
+            logging.error(f"Failed to fetch certificates from namespace '{ns}': {str(e)}")
+
+    return all_certificates
 
 
 def get_secret(namespace, secret_name):
@@ -72,16 +136,12 @@ def get_secret(namespace, secret_name):
     return secret
 
 
-# Feature toggle for dry run mode
-DRY_RUN = os.getenv("DRY_RUN", "false").lower() in ("true", "1", "yes", "enabled")
-
-
-def upload_to_key_vault(vault_url, certificate_name, cert, key):
+def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
     """
     Upload a certificate to Azure Key Vault if it doesn't already exist.
     If DRY_RUN is enabled, log the intended action but do not upload.
     """
-    logging.debug(f"Starting upload process for certificate: {certificate_name}")
+    logging.debug(f"Starting upload process for certificate: {certificate_name} with tags: {tags}")
     credential = DefaultAzureCredential()
     certificate_client = CertificateClient(vault_url=vault_url, credential=credential)
 
@@ -93,13 +153,14 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key):
         existing_cert = certificate_client.get_certificate(certificate_name)
         existing_cert_thumbprint = existing_cert.properties.x509_thumbprint.hex()
         if cert_thumbprint == existing_cert_thumbprint:
-            logging.info(f"Certificate {certificate_name} already exists in Key Vault with the same thumbprint. Skipping upload.")
+            logging.info(
+                f"Certificate {certificate_name} already exists in Key Vault with the same thumbprint. Skipping upload.")
             return False
     except Exception:
         logging.warning(f"Certificate {certificate_name} not found in Key Vault. Proceeding with upload...")
 
     if DRY_RUN:
-        logging.info(f"[DRY RUN] Would upload certificate '{certificate_name}' to Key Vault.")
+        logging.info(f"[DRY RUN] Would upload certificate '{certificate_name}' to Key Vault with tags: {tags}")
         return True  # Simulate success in dry run mode
 
     # Create PFX data without encryption
@@ -112,44 +173,54 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key):
     )
 
     # Upload the certificate to Key Vault
-    certificate_client.import_certificate(certificate_name=certificate_name, certificate_bytes=pfx_data)
-    logging.info(f"Certificate {certificate_name} successfully uploaded to Key Vault.")
-    return True
-
-
-# Define a mapping matrix for AKS secret names to Key Vault certificate names
-NAME_MAPPING = {
-    "acme-crt-wildcard-test-currys-app-secret": "wildcard-test-currys-app",
-    "acme-crt-wildcard-test-elcare-com-secret": "wildcard-test-elcare-com",
-    # Add more mappings as needed
-}
-
-# Feature toggle for enabling/disabling name mapping
-USE_NAME_MAPPING = os.getenv("USE_NAME_MAPPING", "false").lower() in ("true", "1", "yes", "enabled")
-
-# If strict mapping is enabled, only secrets from NAME_MAPPING will be used
-STRICT_NAME_MAPPING = os.getenv("STRICT_NAME_MAPPING", "false").lower() in ("true", "1", "yes", "enabled")
+    try:
+        certificate_client.import_certificate(
+            certificate_name=certificate_name,
+            certificate_bytes=pfx_data,
+            tags=tags  # Přidání tagů k certifikátu
+        )
+        logging.info(f"Certificate '{certificate_name}' successfully uploaded to Key Vault with tags: {tags}")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to upload certificate '{certificate_name}' to Key Vault: {str(e)}")
+        return False
 
 
 def get_certificate_name(secret_name):
     """
-    Get the corresponding Key Vault certificate name for the given Kubernetes secret name.
+    Determines the Key Vault certificate name based on the configuration.
 
-    - If USE_NAME_MAPPING is False -> return original secret_name.
-    - If STRICT_NAME_MAPPING is True -> only return mapped names, ignore others.
-    - If STRICT_NAME_MAPPING is False -> return mapped names where available, otherwise return original.
+    - If `USE_NAME_MAPPING=False` → Always return the AKS secret name.
+    - If `STRICT_NAME_MAPPING=True` → Only use mapped names, ignore others.
+    - If `STRICT_NAME_MAPPING=False` → Use mapped names where available, otherwise fallback to AKS secret name.
     """
     if not USE_NAME_MAPPING:
-        return secret_name.replace(".", "-")  # Default behavior
+        return secret_name  # Ignore mapping and use AKS secret name
 
-    if STRICT_NAME_MAPPING:
-        return NAME_MAPPING.get(secret_name)  # Return mapped name or None if not found
+    config_entry = CERTIFICATE_CONFIG.get(secret_name)
 
-    return NAME_MAPPING.get(secret_name, secret_name.replace(".", "-"))  # Return mapped name or fallback
+    if STRICT_NAME_MAPPING and config_entry is None:
+        return None  # Strict mode → Ignore unmapped secrets
+
+    return config_entry.get("cert_name", secret_name) if config_entry else secret_name
+
+
+def get_certificate_tags(secret_name):
+    """
+    Retrieves the tags for a given certificate.
+
+    - If a mapping exists in `CERTIFICATE_CONFIG`, use those tags.
+    - Otherwise, apply `DEFAULT_TAGS`.
+    """
+    config_entry = CERTIFICATE_CONFIG.get(secret_name)
+
+    if config_entry and "tags" in config_entry:
+        return config_entry["tags"]
+
+    return DEFAULT_TAGS  # Apply default tags if no custom tags are defined
 
 
 def main():
-    namespace = "ingresscontrollers"
     vault_url = os.getenv("AZURE_KEYVAULT_URL")
     if not vault_url:
         logging.error("Missing environment variable AZURE_KEYVAULT_URL. Exiting.")
@@ -158,26 +229,30 @@ def main():
     logging.info(f"Starting certificate sync process. Running every {SYNC_INTERVAL} seconds.")
 
     while True:
-        certificates = get_certificates(namespace)
+        certificates = get_certificates()  # Corrected call
+
         for certificate in certificates:
             secret_name = certificate["spec"]["secretName"]
+            namespace = certificate["metadata"]["namespace"]
             certificate_name = get_certificate_name(secret_name)
 
             if STRICT_NAME_MAPPING and certificate_name is None:
-                logging.warning(f"Skipping secret '{secret_name}' because it is not in NAME_MAPPING.")
+                logging.warning(f"Skipping secret '{secret_name}' because it is not in CERTIFICATE_CONFIG.")
                 continue
 
-            logging.info(f"Processing certificate: {certificate['metadata']['name']}")
+            tags = get_certificate_tags(secret_name)
+
+            logging.info(f"Processing certificate: {certificate['metadata']['name']} in namespace {namespace}")
             secret = get_secret(namespace, secret_name)
             cert = base64.b64decode(secret.data["tls.crt"]).decode("utf-8")
             key = base64.b64decode(secret.data["tls.key"]).decode("utf-8")
 
-            logging.debug(f"Uploading certificate {certificate_name} to Key Vault...")
-            if upload_to_key_vault(vault_url, certificate_name, cert, key):
-                logging.info(f"Certificate {certificate_name} successfully uploaded to Key Vault.")
+            logging.debug(f"Uploading certificate {certificate_name} to Key Vault with tags {tags}...")
+            if upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
+                logging.info(f"Certificate {certificate_name} successfully uploaded to Key Vault with tags {tags}.")
 
         logging.info(f"Sync completed. Sleeping for {SYNC_INTERVAL} seconds.")
-        sleep(SYNC_INTERVAL)  # Wait before next sync
+        sleep(SYNC_INTERVAL)
 
 
 if __name__ == "__main__":
