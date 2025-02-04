@@ -91,11 +91,25 @@ def get_all_namespaces():
     return [ns.metadata.name for ns in namespaces.items]
 
 
+def load_kubernetes_config():
+    """
+    Automatically loads Kubernetes configuration based on the environment.
+    - If running inside AKS, it loads in-cluster config.
+    - Otherwise, it falls back to local kubeconfig.
+    """
+    try:
+        config.load_incluster_config()
+        logging.info("Running inside AKS - Using in-cluster Kubernetes config.")
+    except config.ConfigException:
+        config.load_kube_config()
+        logging.info("Running locally - Using kubeconfig.")
+
+
 def get_certificates():
     """
     Fetches certificates based on SEARCH_NAMESPACES settings.
     """
-    config.load_kube_config()
+    load_kubernetes_config()
     custom_objects_api = client.CustomObjectsApi()
 
     include_namespaces, exclude_namespaces = parse_namespaces("SEARCH_NAMESPACES")
@@ -179,7 +193,6 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
             certificate_bytes=pfx_data,
             tags=tags  # Přidání tagů k certifikátu
         )
-        logging.info(f"Certificate '{certificate_name}' successfully uploaded to Key Vault with tags: {tags}")
         return True
     except Exception as e:
         logging.error(f"Failed to upload certificate '{certificate_name}' to Key Vault: {str(e)}")
