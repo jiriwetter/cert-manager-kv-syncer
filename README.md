@@ -45,20 +45,20 @@ Set the following environment variables:
 ## Usage
 ### Run the script
 ```bash
-python sre-local-certificate-sync.py
+python aks-kv-syncer.py
 ```
 
 ### Example: Search in all namespaces except `kube-system`
 ```bash
 export SEARCH_NAMESPACES="!kube-system"
-python sre-local-certificate-sync.py
+python aks-kv-syncer.py
 ```
 
 ### Example: Use name mapping with strict mode
 ```bash
 export USE_NAME_MAPPING=true
 export STRICT_NAME_MAPPING=true
-python sre-local-certificate-sync.py
+python aks-kv-syncer.py
 ```
 
 ## How It Works
@@ -72,7 +72,7 @@ python sre-local-certificate-sync.py
 By default, logs are at `INFO` level. To enable debug mode:
 ```bash
 export DEFAULT_LOGGING_LEVEL=DEBUG
-python sre-local-certificate-sync.py
+python aks-kv-syncer.py
 ```
 
 ## Planned Features
