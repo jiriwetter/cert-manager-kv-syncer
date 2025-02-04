@@ -24,7 +24,7 @@ COPY --from=builder /install /usr/local
 COPY app/aks-kv-syncer.py .
 
 # Set file permissions
-RUN chmod 755 /app && chmod 700 aks-kv-syncer.py
+RUN chmod 755 /app && chmod 755 aks-kv-syncer.py
 
 # Switch to the non-privileged user
 USER appuser
