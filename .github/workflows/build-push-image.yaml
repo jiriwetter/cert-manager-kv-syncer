@@ -28,7 +28,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ secrets.DOCKER_HUB_USERNAME }}/aks-kv-syncer
+          images: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -36,7 +36,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/aks-kv-syncer:latest
-            ${{ secrets.DOCKER_HUB_USERNAME }}/aks-kv-syncer:${{ github.sha }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
 
