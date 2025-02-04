@@ -1,0 +1,23 @@
+# Default values for aks-kv-syncer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+appName: "aks-kv-syncer"
+
+replicaCount: 1
+
+image:
+  repository: docker.io/neurobion/aks-kv-syncer
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+
+resources:
+   limits:
+     cpu: 100m
+     memory: 256Mi
+   requests:
+     cpu: 64m
+     memory: 128Mi

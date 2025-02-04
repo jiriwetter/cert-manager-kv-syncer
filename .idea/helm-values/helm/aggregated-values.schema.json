@@ -1,0 +1,19 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://helm-values.fstaudt.github.io/helm/0.1.0/aggregated-values.schema.json",
+  "x-generated-by" : "helm-values 0.10.0",
+  "x-generated-at" : "2025-02-04T14:06:31Z",
+  "title" : "Configuration for chart helm:0.1.0",
+  "description" : "\n\\n",
+  "properties" : {
+    "global" : {
+      "allOf" : [ {
+        "title" : "Aggregated global values for chart helm:0.1.0",
+        "description" : "\n\\n Aggregation of global values of chart and its dependencies: ",
+        "x-intellij-html-description" : "<br>Aggregation of global values of chart and its dependencies: <ul></ul>"
+      } ]
+    }
+  },
+  "unevaluatedProperties" : false,
+  "additionalProperties" : false
+}
