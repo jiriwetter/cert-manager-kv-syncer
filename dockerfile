@@ -7,7 +7,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
 # Copy the requirements file and install dependencies
-COPY requirements.txt .
+COPY app/requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 # Second stage: Clean runtime image
@@ -21,7 +21,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=builder /install /usr/local
 
 # Copy the application
-COPY aks-kv-syncer.py .
+COPY app/aks-kv-syncer.py .
 
 # Set file permissions
 RUN chmod 755 /app && chmod 700 aks-kv-syncer.py
