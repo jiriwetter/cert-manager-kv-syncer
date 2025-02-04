@@ -28,7 +28,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ secrets.DOCKER_USERNAME }}/aks-kv-syncer
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -36,6 +36,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/aks-kv-syncer:latest
+            ${{ secrets.DOCKER_USERNAME }}/aks-kv-syncer:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
+
