@@ -1,16 +1,33 @@
-FROM python:3.11-slim
+FROM python:3.11-alpine AS builder
 
-RUN useradd --create-home --shell /bin/bash appuser
-USER appuser
+# Create and use a non-privileged user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
+# Set the working directory in the container
 WORKDIR /app
 
-COPY --chown=appuser:appuser app/aks-kv-syncer.py app/requirements.txt /app/
+# Copy the requirements file and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Second stage: Clean runtime image
+FROM python:3.11-alpine
+WORKDIR /app
 
-ENV PYTHONUNBUFFERED=1
+# Create a non-privileged user in the final image
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-RUN chmod 700 /app && chmod 600 /app/aks-kv-syncer.py /app/requirements.txt
+# Copy installed dependencies from the builder image
+COPY --from=builder /install /usr/local
 
-ENTRYPOINT ["python", "sre-local-certificate-sync.py"]
+# Copy the application
+COPY aks-kv-syncer.py .
+
+# Set file permissions
+RUN chmod 755 /app && chmod 700 aks-kv-syncer.py
+
+# Switch to the non-privileged user
+USER appuser
+
+# Use ENTRYPOINT for flexible arguments
+ENTRYPOINT ["python", "aks-kv-syncer.py"]
