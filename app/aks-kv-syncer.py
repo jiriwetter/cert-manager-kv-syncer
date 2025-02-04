@@ -19,8 +19,8 @@ DRY_RUN = os.getenv("DRY_RUN", "false").lower() in ("true", "1", "yes", "enabled
 SYNC_INTERVAL = int(os.getenv("SYNC_INTERVAL", 300))
 
 # Configurable options
-USE_NAME_MAPPING = os.getenv("USE_NAME_MAPPING", "false").lower() in ("true", "1", "yes", "enabled")
-STRICT_NAME_MAPPING = os.getenv("STRICT_NAME_MAPPING", "false").lower() in ("true", "1", "yes", "enabled")
+USE_NAME_MAPPING = os.getenv("USE_NAME_MAPPING", "true").lower() in ("true", "1", "yes", "enabled")
+STRICT_NAME_MAPPING = os.getenv("STRICT_NAME_MAPPING", "true").lower() in ("true", "1", "yes", "enabled")
 
 # Default tags (used if no specific tags are defined)
 DEFAULT_TAGS = {"managed_by": "sre-cert-sync-tool"}
