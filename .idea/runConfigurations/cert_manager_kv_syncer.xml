@@ -1,14 +1,14 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="aks-kv-syncer" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-    <module name="sre-certificate-sync" />
+  <configuration default="false" name="cert-manager-kv-syncer" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <module name="cert-manager-kv-syncer" />
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
+      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="AZURE_KEYVAULT_URL" value="https://extsec-k8snp9performance.vault.azure.net" />
       <env name="DEFAULT_LOGGING_LEVEL" value="info" />
       <env name="DRY_RUN" value="false" />
-      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="SEARCH_NAMESPACES" value="ingresscontrollers" />
       <env name="STRICT_NAME_MAPPING" value="true" />
       <env name="SYNC_INTERVAL" value="60" />
@@ -19,7 +19,7 @@
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/aks-kv-syncer.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/cert-manager-kv-syncer.py" />
     <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />

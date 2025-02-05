@@ -21,7 +21,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=builder /install /usr/local
 
 # Copy the application
-COPY app/aks-kv-syncer.py .
+COPY app/cert-manager-kv-syncer.py .
 
 # Set file permissions
 RUN chmod 755 /app && chmod 755 aks-kv-syncer.py
@@ -30,4 +30,4 @@ RUN chmod 755 /app && chmod 755 aks-kv-syncer.py
 USER appuser
 
 # Use ENTRYPOINT for flexible arguments
-ENTRYPOINT ["python", "aks-kv-syncer.py"]
+ENTRYPOINT ["python", "cert-manager-kv-syncer.py"]

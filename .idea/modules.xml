@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/sre-certificate-sync.iml" filepath="$PROJECT_DIR$/.idea/sre-certificate-sync.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/cert-manager-kv-syncer.iml" filepath="$PROJECT_DIR$/.idea/cert-manager-kv-syncer.iml" />
     </modules>
   </component>
 </project>

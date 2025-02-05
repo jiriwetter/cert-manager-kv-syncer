@@ -24,10 +24,10 @@ USE_NAME_MAPPING = os.getenv("USE_NAME_MAPPING", "true").lower() in ("true", "1"
 STRICT_NAME_MAPPING = os.getenv("STRICT_NAME_MAPPING", "true").lower() in ("true", "1", "yes", "enabled")
 
 # Default tags (used if no specific tags are defined)
-DEFAULT_TAGS = {"created-by": "aks-kv-syncer"}
+DEFAULT_TAGS = {"created-by": "cert-manager-kv-syncer"}
 
 # Certificate configuration (maps AKS secrets to Key Vault certificates with optional tags)
-with open("/etc/aks-kv-syncer/certificate-config.json", "r") as f:
+with open("/etc/cert-manager-kv-syncer/certificate-config.json", "r") as f:
     CERTIFICATE_CONFIG = json.load(f)
 
 # Read logging levels from environment variables or use defaults
