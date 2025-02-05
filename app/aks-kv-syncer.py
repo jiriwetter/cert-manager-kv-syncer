@@ -35,7 +35,7 @@ CERTIFICATE_CONFIG = {
 
 # Read logging levels from environment variables or use defaults
 DEFAULT_LOGGING_LEVEL = os.getenv("DEFAULT_LOGGING_LEVEL", "DEBUG").upper()
-AZURE_LOGGING_LEVEL = os.getenv("AZURE_LOGGING_LEVEL", "WARNING").upper()
+AZURE_LOGGING_LEVEL = os.getenv("AZURE_LOGGING_LEVEL", "DEBUG").upper()
 
 # Configure the main logging system
 logging.basicConfig(
