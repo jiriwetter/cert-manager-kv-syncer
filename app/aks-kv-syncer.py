@@ -1,3 +1,4 @@
+import json
 import logging
 import datetime
 from time import sleep
@@ -23,15 +24,12 @@ USE_NAME_MAPPING = os.getenv("USE_NAME_MAPPING", "true").lower() in ("true", "1"
 STRICT_NAME_MAPPING = os.getenv("STRICT_NAME_MAPPING", "true").lower() in ("true", "1", "yes", "enabled")
 
 # Default tags (used if no specific tags are defined)
-DEFAULT_TAGS = {"managed_by": "sre-cert-sync-tool"}
+DEFAULT_TAGS = {"created-by": "aks-kv-syncer"}
 
 # Certificate configuration (maps AKS secrets to Key Vault certificates with optional tags)
-CERTIFICATE_CONFIG = {
-    "acme-crt-wildcard-test-elcare-com-secret": {
-        "cert_name": "wildcard-elcare-com",
-        "tags": {"owner": "team-networking", "project": "elcare"}
-    }
-}
+CERTIFICATE_CONFIG_PATH = os.getenv("CERTIFICATE_CONFIG_PATH")
+with open(CERTIFICATE_CONFIG_PATH, "r") as f:
+    CERTIFICATE_CONFIG = json.load(f)
 
 # Read logging levels from environment variables or use defaults
 DEFAULT_LOGGING_LEVEL = os.getenv("DEFAULT_LOGGING_LEVEL", "DEBUG").upper()
