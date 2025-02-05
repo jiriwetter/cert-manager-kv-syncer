@@ -156,7 +156,7 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
     If DRY_RUN is enabled, log the intended action but do not upload.
     """
     logging.debug(f"Starting upload process for certificate: {certificate_name} with tags: {tags}")
-    credential = DefaultAzureCredential()
+    credential = DefaultAzureCredential(exclude_shared_token_cache_credential=True)
     certificate_client = CertificateClient(vault_url=vault_url, credential=credential)
 
     private_key = load_pem_private_key(key.encode("utf-8"), password=None, backend=default_backend())
