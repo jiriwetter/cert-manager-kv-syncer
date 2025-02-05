@@ -118,7 +118,7 @@ def get_certificates():
     else:
         namespaces_to_search = list(include_namespaces)  # Use only specified namespaces
 
-    logging.info(f"Searching certificates in namespaces: {namespaces_to_search}")
+    logging.info(f"Searching certificates in defined namespaces...")
 
     all_certificates = []
     for ns in namespaces_to_search:
