@@ -24,8 +24,11 @@ The tool automates the synchronization of TLS certificates from Kubernetes Secre
 - **Automatic Environment Detection** – Runs seamlessly both locally and inside AKS.
 
 ## Installation & Requirements
+
+The tool can also be run locally without the need for Helm installation. This allows for manual synchronization by simply executing the script, making it useful for on-demand certificate updates or debugging purposes.
+
 ### Prerequisites
-- **Python 3.8+**
+- **Python 3.11+**
 - **Kubernetes Access** – Ensure you have a working `kubeconfig`.
 - **Azure Key Vault Access** – Configure authentication using `DefaultAzureCredential`.
 
@@ -42,15 +45,15 @@ pip install -r requirements.txt
 ## Configuration
 Set the following environment variables:
 
-| Variable              | Default                                | Description                                                                                                              |
-|-----------------------|----------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| `AZURE_KEYVAULT_URL`  | *Required*                             | Azure Key Vault URL                                                                                                      |
-| `SYNC_INTERVAL`       | `300`                                  | Sync interval in seconds                                                                                                 |
-| `SEARCH_NAMESPACES`   | `""`                                   | Namespaces to search (`"ingresscontrollers,production"` or `"!production"` or `""` for all)                              |
-| `USE_NAME_MAPPING`    | `False`                                | Maps AKS secret names to custom Azure Key Vault certificate names using a predefined matrix.                             |
-| `STRICT_NAME_MAPPING` | `False`                                | Only sync mapped certificates. Requires all secrets to have a defined mapping; otherwise, they will not be synchronized. |
-| `DEFAULT_TAGS`        | `{created-by: cert-manager-kv-syncer}` | Tags applied to certificates                                                                                             |
-| `DRY_RUN`             | `False`                                | Allows testing the synchronization process without making actual changes.                                                |
+| Variable              | Default                                | Description                                                                                                                                                                    |
+|-----------------------|----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `AZURE_KEYVAULT_URL`  | *Required*                             | Azure Key Vault URL                                                                                                                                                            |
+| `SYNC_INTERVAL`       | `300`                                  | Sync interval in seconds                                                                                                                                                       |
+| `SEARCH_NAMESPACES`   | `""`                                   | Namespaces to search (`"ingresscontrollers,production"` or `"!production"` or `""` for all)                                                                                    |
+| `USE_NAME_MAPPING`    | `False`                                | Maps AKS secret names to custom Azure Key Vault certificate names using a predefined matrix. Those without mapping set will be transferred with the same name and default tag. |
+| `STRICT_NAME_MAPPING` | `False`                                | Only sync mapped certificates. Requires all secrets to have a defined mapping; otherwise, they will not be synchronized.                                                       |
+| `DEFAULT_TAGS`        | `{created-by: cert-manager-kv-syncer}` | Tags applied to certificates. Currenctly hardcoded.                                                                                                                            |
+| `DRY_RUN`             | `False`                                | Allows testing the synchronization process without making actual changes.                                                                                                      |
 
 ## Usage
 ### Run the script
@@ -61,28 +64,18 @@ python cert-manager-kv-syncer.py
 ### Example: Search in all namespaces except `kube-system`
 ```bash
 export SEARCH_NAMESPACES="!kube-system"
-python cert-manager-kv-syncer.py
 ```
 
 ### Example: Use name mapping with strict mode
 ```bash
 export USE_NAME_MAPPING=true
 export STRICT_NAME_MAPPING=true
-python cert-manager-kv-syncer.py
 ```
-
-## How It Works
-1. Fetches `Certificate` resources from Kubernetes.
-2. Extracts secrets and transforms names based on `USE_NAME_MAPPING`.
-3. Checks if the certificate already exists in Key Vault.
-4. If different or missing, uploads the certificate with tags.
-5. Repeats based on `SYNC_INTERVAL`.
 
 ## Logs & Debugging
 By default, logs are at `INFO` level. To enable debug mode:
 ```bash
 export DEFAULT_LOGGING_LEVEL=DEBUG
-python cert-manager-kv-syncer.py
 ```
 
 ## Planned Features
