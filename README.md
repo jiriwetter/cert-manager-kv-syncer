@@ -11,7 +11,7 @@ The tool automates the synchronization of TLS certificates from Kubernetes Secre
 * **Continuous synchronization**: The process runs continuously based on the `SYNC_INTERVAL` value, ensuring all certificates remain synchronized between Kubernetes and Azure Key Vault.
 
 
-* ![Diagram](assets/cert-manager-kv-syncer.png)
+![Diagram](assets/cert-manager-kv-syncer.png)
 
 ## Features
 - **Automatic Synchronization** – Periodically syncs Kubernetes secrets to Azure Key Vault.
