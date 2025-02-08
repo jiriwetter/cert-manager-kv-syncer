@@ -14,14 +14,14 @@ The tool automates the synchronization of TLS certificates from Kubernetes Secre
 ![Diagram](assets/cert-manager-kv-syncer.png)
 
 ## Features
-- **Automatic Synchronization** – Periodically syncs Kubernetes secrets to Azure Key Vault.
-- **Namespace Filtering** – Define where to search for certificates using `SEARCH_NAMESPACES`.
-- **Exclusion Support** – Exclude namespaces using `!namespace` syntax.
-- **Custom Certificate Mapping** – Rename certificates before storing them in Key Vault.
-- **Tag Management** – Assign custom tags to Key Vault certificates.
-- **Dry Run Mode** – Test without making real changes (`DRY_RUN=True`).
-- **Configurable Sync Interval** – Control how often sync runs (`SYNC_INTERVAL`).
-- **Automatic Environment Detection** – Runs seamlessly both locally and inside AKS.
+- **Automatic synchronization** – Periodically syncs Kubernetes secrets to Azure Key Vault.
+- **Namespace filtering** – Define where to search for certificates using `SEARCH_NAMESPACES`.
+- **Exclusion support** – Exclude namespaces using `!namespace` syntax.
+- **Custom certificate mapping** – Rename certificates before storing them in Key Vault.
+- **Tag management** – Assign custom tags to Key Vault certificates.
+- **Dry Run mode** – Test without making real changes (`DRY_RUN=True`).
+- **Configurable sync interval** – Control how often sync runs (`SYNC_INTERVAL`).
+- **Automatic environment detection** – Runs seamlessly both locally and inside AKS.
 
 ## Installation & Requirements
 
