@@ -80,9 +80,9 @@ export DEFAULT_LOGGING_LEVEL=DEBUG
 
 ## Planned Features
 - **Notifications** – Alerts via Slack, Teams, or email when certificates are updated.
-- **Automatic Cleanup** – Remove stale certificates from Key Vault.
-- **Multi-Key Vault Support** – Allow different vaults for different certificates.
-- **Audit Logging** – Store sync history in a database.
+- **Automatic cleanup** – Remove stale certificates from Key Vault.
+- **Multi Key Vault support** – Allow different vaults for different certificates.
+- **Audit logging** – Store sync history in a database.
 
 ## Contributing
 1. Fork the repository
