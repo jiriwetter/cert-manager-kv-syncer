@@ -54,5 +54,5 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}:latest
-            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_VERSION }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}:${{ env.IMAGE_VERSION }}
           labels: ${{ steps.meta.outputs.labels }}
