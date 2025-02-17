@@ -4,8 +4,8 @@
 
 image:
   repository: docker.io/neurobion/cert-manager-kv-syncer
-  pullPolicy: Always
-  tag: "latest"
+  pullPolicy: IfNotPresent
+  tag: "v0.1.0"
 
 resources:
    limits:

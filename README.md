@@ -38,6 +38,8 @@ This command installs the syncer in the cert-manager-kv-syncer namespace using t
 
 ### Upgrade
 
+Upgrades and installs in case it does not exist.
+
 ```sh
 helm upgrade --install cert-manager-kv-syncer cert-manager-kv-syncer/
 ```
