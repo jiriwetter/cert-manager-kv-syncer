@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and push docker image
 
 on:
   push:
@@ -38,6 +38,15 @@ jobs:
         with:
           images: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}
 
+      - name: Determine image tag
+        id: set_tag
+        run: |
+          if [ -n "${{ inputs.imageTag }}" ]; then
+            echo "IMAGE_VERSION=${{ inputs.imageTag }}" >> $GITHUB_ENV
+          else
+            echo "IMAGE_VERSION=${{ github.sha }}" >> $GITHUB_ENV
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -45,5 +54,5 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}:latest
-            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.imageTag != '' && inputs.imageTag || github.sha }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_VERSION }}
           labels: ${{ steps.meta.outputs.labels }}
