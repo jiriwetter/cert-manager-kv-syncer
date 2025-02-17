@@ -63,15 +63,16 @@ pip install -r requirements.txt
 ## Configuration
 Set the following environment variables:
 
-| Variable              | Default                                | Description                                                                                                                                                                    |
-|-----------------------|----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `AZURE_KEYVAULT_URL`  | *Required*                             | Azure Key Vault URL                                                                                                                                                            |
-| `SYNC_INTERVAL`       | `300`                                  | Sync interval in seconds                                                                                                                                                       |
-| `SEARCH_NAMESPACES`   | `""`                                   | Namespaces to search (`"ingresscontrollers,production"` or `"!production"` or `""` for all)                                                                                    |
-| `USE_NAME_MAPPING`    | `False`                                | Maps AKS secret names to custom Azure Key Vault certificate names using a predefined matrix. Those without mapping set will be transferred with the same name and default tag. |
-| `STRICT_NAME_MAPPING` | `False`                                | Only sync mapped certificates. Requires all secrets to have a defined mapping; otherwise, they will not be synchronized.                                                       |
-| `DEFAULT_TAGS`        | `{created-by: cert-manager-kv-syncer}` | Tags applied to certificates. Currenctly hardcoded.                                                                                                                            |
-| `DRY_RUN`             | `False`                                | Allows testing the synchronization process without making actual changes.                                                                                                      |
+| Variable                  | Default                                               | Description                                                                                                                                                                    |
+|---------------------------|-------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `AZURE_KEYVAULT_URL`      | *Required*                                            | Azure Key Vault URL                                                                                                                                                            |
+| `SYNC_INTERVAL`           | `300`                                                 | Sync interval in seconds                                                                                                                                                       |
+| `SEARCH_NAMESPACES`       | `""`                                                  | Namespaces to search (`"ingresscontrollers,production"` or `"!production"` or `""` for all)                                                                                    |
+| `USE_NAME_MAPPING`        | `False`                                               | Maps AKS secret names to custom Azure Key Vault certificate names using a predefined matrix. Those without mapping set will be transferred with the same name and default tag. |
+| `STRICT_NAME_MAPPING`     | `False`                                               | Only sync mapped certificates. Requires all secrets to have a defined mapping; otherwise, they will not be synchronized.                                                       |
+| `DEFAULT_TAGS`            | `{created-by: cert-manager-kv-syncer}`                | Tags applied to certificates. Currenctly hardcoded.                                                                                                                            |
+| `DRY_RUN`                 | `False`                                               | Allows testing the synchronization process without making actual changes.                                                                                                      |
+| `CERTIFICATE_CONFIG_PATH` | `/etc/cert-manager-kv-syncer/certificate-config.json` | Path to the name mapping matrix between AKS and Key Vault                                                                                                                      |
 
 ## Usage
 
