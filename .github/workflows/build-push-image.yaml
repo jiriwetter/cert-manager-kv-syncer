@@ -4,7 +4,15 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
+    inputs:
+      imageTag:
+        description: 'Docker image tag'
+        required: false
+        default: ''
 
 jobs:
   build-and-push:
@@ -37,6 +45,5 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}:latest
-            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.imageTag != '' && inputs.imageTag || github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
-
