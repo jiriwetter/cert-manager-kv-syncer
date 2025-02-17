@@ -1,0 +1,95 @@
+# Default values for cert-manager-kv-syncer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: docker.io/neurobion/cert-manager-kv-syncer
+  pullPolicy: IfNotPresent
+  tag: "v0.1.0"
+
+resources:
+   limits:
+     cpu: 100m
+     memory: 256Mi
+   requests:
+     cpu: 64m
+     memory: 128Mi
+
+azure:
+  keyVaultUrl: "https://common-certificate-kv.vault.azure.net/"
+
+  # https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/security#key-vault-certificates-officer
+  # az login
+  # az account set --subscription "ITDS Platform DEV"
+  # az identity create --name cert-manager-kv-syncer-weu-umi --resource-group elkds-dev-common-weu-rg --location westeurope
+  # az identity show --resource-group elkds-dev-common-weu-rg --name cert-manager-kv-syncer-weu-umi --query clientId -o tsv
+  # KV in ITDS Platform PROD
+  # az role assignment create --assignee 25bcf5f4-c31c-47dd-ba7d-c09438b7e0f6 --role "Key Vault Certificates Officer" --scope "/subscriptions/5c3db809-7393-4653-81b7-4212b2e56203/resourceGroups/elkds-prod-common-weu-rg/providers/Microsoft.KeyVault/vaults/common-certificate-kv"
+  # az aks show -g elkds-dev-cluster-weu-rg -n elkds-dev-cluster-weu-aks --query "oidcIssuerProfile.issuerUrl" -o tsv
+  # az identity federated-credential create --name "cert-manager-kv-syncer-itds-test" --identity-name cert-manager-kv-syncer-weu-umi --issuer https://westeurope.oic.prod-aks.azure.com/661f8f5f-1e7d-4d4d-a886-1d2661c4ddf8/5de104dd-58c2-4915-beee-d15675d43aba/ --subject "system:serviceaccount:cert-manager-kv-syncer:cert-manager-kv-syncer" --resource-group elkds-dev-common-weu-rg
+  workloadIdentity:
+    clientId: "25bcf5f4-c31c-47dd-ba7d-c09438b7e0f6"
+    subscriptionId: "dfca6042-8df2-4256-8715-ed0372a8e590"
+    tenantId: "661f8f5f-1e7d-4d4d-a886-1d2661c4ddf8"
+
+sync:
+  dryRun: "false"
+  interval: "300"
+
+logging:
+  defaultLevel: "INFO"  # Default logging level (DEBUG, INFO, WARNING, ERROR)
+  azureLevel: "WARNING"  # Logging level for Azure SDK (DEBUG, INFO, WARNING, ERROR)
+
+search:
+  namespaces: "ingresscontrollers"
+
+mapping:
+  useNameMapping: "true"  # Enable name mapping (true/false)
+  strictNameMapping: "true"  # Enforce strict name mapping (true/false)
+
+certificateConfig:
+  acme-crt-secret:
+    cert_name: "elkds-dev-elkjop-com"
+    tags:
+      owner: "DL_HQ_SRE@elkjop.no"
+      team: "sre"
+  acme-crt-wildcard-dev-elkjop-app-secret:
+    cert_name: "dev-elkjop-app"
+    tags:
+      owner: "DL_HQ_SRE@elkjop.no"
+      team: "sre"
+  acme-crt-wildcard-dev-elkjop-no-secret:
+    cert_name: "dev-elkjop-no"
+    tags:
+      owner: "DL_HQ_SRE@elkjop.no"
+      team: "sre"
+  acme-crt-wildcard-dev-elkjop-com-secret:
+    cert_name: "dev-elkjop-com"
+    tags:
+      owner: "DL_HQ_SRE@elkjop.no"
+      team: "sre"
+  acme-crt-wildcard-dev-elcare-com-secret:
+    cert_name: "dev-elcare-com"
+    tags:
+      owner: "DL_HQ_SRE@elkjop.no"
+      team: "sre"
+  acme-crt-wildcard-dev-gigantti-fi-secret:
+    cert_name: "dev-gigantti-fi"
+    tags:
+      owner: "DL_HQ_SRE@elkjop.no"
+      team: "sre"
+  acme-crt-wildcard-dev-elgiganten-se-secret:
+    cert_name: "dev-elgiganten-se"
+    tags:
+      owner: "DL_HQ_SRE@elkjop.no"
+      team: "sre"
+  acme-crt-wildcard-dev-currys-app-secret:
+    cert_name: "dev-currys-app"
+    tags:
+      owner: "DL_HQ_SRE@elkjop.no"
+      team: "sre"
+  acme-crt-wildcard-dev-elgiganten-dk-secret:
+    cert_name: "dev-elgiganten-dk"
+    tags:
+      owner: "DL_HQ_SRE@elkjop.no"
+      team: "sre"
