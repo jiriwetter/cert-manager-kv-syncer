@@ -55,7 +55,33 @@ Set the following environment variables:
 | `DEFAULT_TAGS`        | `{created-by: cert-manager-kv-syncer}` | Tags applied to certificates. Currenctly hardcoded.                                                                                                                            |
 | `DRY_RUN`             | `False`                                | Allows testing the synchronization process without making actual changes.                                                                                                      |
 
+
+
+## Installation
+
+The tool is deployed in Kubernetes using **Helm**.
+
+### Install
+To install the syncer, run:
+
+```sh
+helm install cert-manager-kv-syncer cert-manager-kv-syncer \
+  --values cert-manager-kv-syncer/values.yaml \
+  --namespace cert-manager-kv-syncer \
+  --create-namespace
+```
+This command installs the syncer in the cert-manager-kv-syncer namespace using the provided configuration values.
+
+### Upgrade
+
+```sh
+helm upgrade --install cert-manager-kv-syncer cert-manager-kv-syncer/
+```
+
 ## Usage
+
+The tool can be used manually and without installation.
+
 ### Run the script
 ```bash
 python cert-manager-kv-syncer.py

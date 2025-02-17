@@ -12,6 +12,16 @@ from cryptography.hazmat.backends import default_backend
 import base64
 import os
 
+# Read logging levels from environment variables or use defaults
+DEFAULT_LOGGING_LEVEL = os.getenv("DEFAULT_LOGGING_LEVEL", "INFO").upper()
+AZURE_LOGGING_LEVEL = os.getenv("AZURE_LOGGING_LEVEL", "WARNING").upper()
+
+# Configure the main logging system
+logging.basicConfig(
+    level=getattr(logging, DEFAULT_LOGGING_LEVEL, logging.INFO),
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 # Feature toggle for dry run mode
 DRY_RUN = os.getenv("DRY_RUN", "false").lower() in ("true", "1", "yes", "enabled")
@@ -26,20 +36,29 @@ STRICT_NAME_MAPPING = os.getenv("STRICT_NAME_MAPPING", "true").lower() in ("true
 # Default tags (used if no specific tags are defined)
 DEFAULT_TAGS = {"created-by": "cert-manager-kv-syncer"}
 
-# Certificate configuration (maps AKS secrets to Key Vault certificates with optional tags)
-with open("/etc/cert-manager-kv-syncer/certificate-config.json", "r") as f:
-    CERTIFICATE_CONFIG = json.load(f)
+CERTIFICATE_CONFIG = {}
+config_file_path = "/etc/cert-manager-kv-syncer/certificate-config.json"
 
-# Read logging levels from environment variables or use defaults
-DEFAULT_LOGGING_LEVEL = os.getenv("DEFAULT_LOGGING_LEVEL", "INFO").upper()
-AZURE_LOGGING_LEVEL = os.getenv("AZURE_LOGGING_LEVEL", "WARNING").upper()
-
-# Configure the main logging system
-logging.basicConfig(
-    level=getattr(logging, DEFAULT_LOGGING_LEVEL, logging.INFO),
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+if os.path.exists(config_file_path):
+    logging.info(f"Loading configuration from {config_file_path}")
+    try:
+        with open(config_file_path, "r") as f:
+            CERTIFICATE_CONFIG = json.load(f)
+    except json.JSONDecodeError as e:
+        logging.error(f"Invalid JSON in configuration file: {e}")
+        exit(1)
+else:
+    CERTIFICATE_CONFIG_PATH = os.getenv("CERTIFICATE_CONFIG_PATH")
+    if CERTIFICATE_CONFIG_PATH:
+        logging.info("Loading configuration from CERTIFICATE_CONFIG_PATH environment variable")
+        try:
+            CERTIFICATE_CONFIG = json.loads(CERTIFICATE_CONFIG_PATH)
+        except json.JSONDecodeError as e:
+            logging.error(f"Invalid JSON in CERTIFICATE_CONFIG_PATH: {e}")
+            exit(1)
+    else:
+        logging.error(f"Neither configuration file {config_file_path} nor CERTIFICATE_CONFIG_PATH environment variable found.")
+        exit(1)
 
 # Suppress general Azure SDK logs unless explicitly enabled
 logging.getLogger("azure").setLevel(getattr(logging, AZURE_LOGGING_LEVEL, logging.WARNING))

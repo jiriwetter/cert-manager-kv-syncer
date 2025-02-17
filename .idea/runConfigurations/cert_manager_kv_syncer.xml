@@ -5,14 +5,14 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
-      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="AZURE_KEYVAULT_URL" value="https://extsec-k8snp9performance.vault.azure.net" />
       <env name="DEFAULT_LOGGING_LEVEL" value="info" />
       <env name="DRY_RUN" value="false" />
+      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="SEARCH_NAMESPACES" value="ingresscontrollers" />
       <env name="STRICT_NAME_MAPPING" value="true" />
       <env name="SYNC_INTERVAL" value="60" />
-      <env name="USE_NAME_MAPPING" value="true" />
+      <env name="USE_NAME_MAPPING" value="false" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
