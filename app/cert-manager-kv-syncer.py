@@ -31,8 +31,8 @@ with open("/etc/cert-manager-kv-syncer/certificate-config.json", "r") as f:
     CERTIFICATE_CONFIG = json.load(f)
 
 # Read logging levels from environment variables or use defaults
-DEFAULT_LOGGING_LEVEL = os.getenv("DEFAULT_LOGGING_LEVEL", "DEBUG").upper()
-AZURE_LOGGING_LEVEL = os.getenv("AZURE_LOGGING_LEVEL", "DEBUG").upper()
+DEFAULT_LOGGING_LEVEL = os.getenv("DEFAULT_LOGGING_LEVEL", "INFO").upper()
+AZURE_LOGGING_LEVEL = os.getenv("AZURE_LOGGING_LEVEL", "WARNING").upper()
 
 # Configure the main logging system
 logging.basicConfig(
