@@ -39,26 +39,27 @@ DEFAULT_TAGS = {"created-by": "cert-manager-kv-syncer"}
 CERTIFICATE_CONFIG = {}
 config_file_path = "/etc/cert-manager-kv-syncer/certificate-config.json"
 
-if os.path.exists(config_file_path):
-    logging.info(f"Loading configuration from {config_file_path}")
-    try:
-        with open(config_file_path, "r") as f:
-            CERTIFICATE_CONFIG = json.load(f)
-    except json.JSONDecodeError as e:
-        logging.error(f"Invalid JSON in configuration file: {e}")
-        exit(1)
-else:
-    CERTIFICATE_CONFIG_PATH = os.getenv("CERTIFICATE_CONFIG_PATH")
-    if CERTIFICATE_CONFIG_PATH:
-        logging.info("Loading configuration from CERTIFICATE_CONFIG_PATH environment variable")
+if USE_NAME_MAPPING:
+    if os.path.exists(config_file_path):
+        logging.info(f"Loading configuration from {config_file_path}")
         try:
-            CERTIFICATE_CONFIG = json.loads(CERTIFICATE_CONFIG_PATH)
+            with open(config_file_path, "r") as f:
+                CERTIFICATE_CONFIG = json.load(f)
         except json.JSONDecodeError as e:
-            logging.error(f"Invalid JSON in CERTIFICATE_CONFIG_PATH: {e}")
+            logging.error(f"Invalid JSON in configuration file: {e}")
             exit(1)
     else:
-        logging.error(f"Neither configuration file {config_file_path} nor CERTIFICATE_CONFIG_PATH environment variable found.")
-        exit(1)
+        CERTIFICATE_CONFIG_PATH = os.getenv("CERTIFICATE_CONFIG_PATH")
+        if CERTIFICATE_CONFIG_PATH:
+            logging.info("Loading configuration from CERTIFICATE_CONFIG_PATH environment variable")
+            try:
+                CERTIFICATE_CONFIG = json.loads(CERTIFICATE_CONFIG_PATH)
+            except json.JSONDecodeError as e:
+                logging.error(f"Invalid JSON in CERTIFICATE_CONFIG_PATH: {e}")
+                exit(1)
+        else:
+            logging.error(f"Neither configuration file {config_file_path} nor CERTIFICATE_CONFIG_PATH environment variable found.")
+            exit(1)
 
 # Suppress general Azure SDK logs unless explicitly enabled
 logging.getLogger("azure").setLevel(getattr(logging, AZURE_LOGGING_LEVEL, logging.WARNING))
@@ -201,6 +202,11 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
         cas=None,
         encryption_algorithm=NoEncryption(),
     )
+
+    with open("certificate.pfx", "wb") as f:
+        f.write(pfx_data)
+
+    exit(0)
 
     # Upload the certificate to Key Vault
     try:
