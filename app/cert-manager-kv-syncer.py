@@ -7,7 +7,7 @@ from azure.identity import DefaultAzureCredential
 from azure.keyvault.certificates import CertificateClient
 from cryptography.hazmat.primitives.serialization import pkcs12, load_pem_private_key, NoEncryption
 from cryptography.hazmat.primitives.hashes import SHA1
-from cryptography.x509 import load_pem_x509_certificate
+from cryptography.x509 import load_pem_x509_certificates
 from cryptography.hazmat.backends import default_backend
 import base64
 import os
@@ -177,11 +177,29 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
     certificate_client = CertificateClient(vault_url=vault_url, credential=credential)
 
     private_key = load_pem_private_key(key.encode("utf-8"), password=None, backend=default_backend())
-    certificate = load_pem_x509_certificate(cert.encode("utf-8"), backend=default_backend())
-    cert_thumbprint = certificate.fingerprint(SHA1()).hex()
+    certificates = load_pem_x509_certificates(cert.encode("utf-8"))
+
+    # Find the primary certificate (the one that corresponds to the private key)
+    # The serialize_key_and_certificates function distinguishes between the main certificate that matches
+    # the private key and the rest that is part of the chain
+    main_certificate = None
+    chain_certificates = []
+
+    for cert in certificates:
+        if cert.public_key().public_numbers() == private_key.public_key().public_numbers():
+            main_certificate = cert
+        else:
+            chain_certificates.append(cert)
+
+    if main_certificate is None:
+        raise ValueError("Could not find a certificate matching the private key.")
+
+    # This value must match the value in the X.509 SHA-1 Thumbprint (in hex) in Azure portal
+    cert_thumbprint = main_certificate.fingerprint(SHA1()).hex()
 
     try:
         existing_cert = certificate_client.get_certificate(certificate_name)
+        # Value visible in portal: X.509 SHA-1 Thumbprint (in hex)
         existing_cert_thumbprint = existing_cert.properties.x509_thumbprint.hex()
         if cert_thumbprint == existing_cert_thumbprint:
             logging.info(
@@ -198,15 +216,10 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
     pfx_data = pkcs12.serialize_key_and_certificates(
         name=certificate_name.encode("utf-8"),
         key=private_key,
-        cert=certificate,
-        cas=None,
+        cert=main_certificate,
+        cas=chain_certificates if chain_certificates else None,
         encryption_algorithm=NoEncryption(),
     )
-
-    with open("certificate.pfx", "wb") as f:
-        f.write(pfx_data)
-
-    exit(0)
 
     # Upload the certificate to Key Vault
     try:
