@@ -28,7 +28,7 @@ durationpy==0.9
 google-auth==2.38.0
 idna==3.10
 isodate==0.7.2
-kubernetes==31.0.0 # https://github.com/kubernetes-client/python/issues/2334
+kubernetes==31.0.0
 msal==1.31.1
 msal-extensions==1.2.0
 oauthlib==3.2.2
