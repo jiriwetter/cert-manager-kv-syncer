@@ -1,0 +1,46 @@
+# Default values for cert-manager-kv-syncer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: docker.io/jiriwetter/cert-manager-kv-syncer
+  pullPolicy: IfNotPresent
+  tag: "v0.1.0"
+
+resources:
+   limits:
+     cpu: 100m
+     memory: 256Mi
+   requests:
+     cpu: 50m
+     memory: 128Mi
+
+azure:
+  keyVaultUrl: "https://example-kv.vault.azure.net/"
+
+workloadIdentity:
+    clientId: "a3d7f8e1-5c42-4b99-b8d2-7e63c9a1f4b0"
+    subscriptionId: "f8b6d3e2-1a4c-47e8-92b1-9c6a5d8e3f70"
+    tenantId: "c2e7a9b5-3d81-4f9d-a265-7d94e1f2b6c3"
+
+sync:
+  dryRun: "true"
+  interval: "300"
+
+logging:
+  defaultLevel: "INFO"  # Default logging level (DEBUG, INFO, WARNING, ERROR)
+  azureLevel: "WARNING"  # Logging level for Azure SDK (DEBUG, INFO, WARNING, ERROR)
+
+search:
+  namespaces: "namespace-xy"
+
+mapping:
+  useNameMapping: "true"  # Enable name mapping (true/false)
+  strictNameMapping: "true"  # Enforce strict name mapping (true/false)
+
+certificateConfig:
+  cert-manager-generated-secret-name:
+    cert_name: "certificate-name-in-keyvault"
+    tags:
+      owner: "name@example.com"
+      team: "team"

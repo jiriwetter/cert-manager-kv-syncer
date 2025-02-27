@@ -1,0 +1,58 @@
+name: Build and push docker image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: 'Docker image tag'
+        required: false
+        default: ''
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PAT }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}
+
+      - name: Determine image tag
+        id: set_tag
+        run: |
+          if [ -n "${{ inputs.imageTag }}" ]; then
+            echo "IMAGE_VERSION=${{ inputs.imageTag }}" >> $GITHUB_ENV
+          else
+            echo "IMAGE_VERSION=${{ github.sha }}" >> $GITHUB_ENV
+          fi
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}:${{ env.IMAGE_VERSION }}
+          labels: ${{ steps.meta.outputs.labels }}
