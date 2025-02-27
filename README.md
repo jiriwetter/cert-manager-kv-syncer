@@ -131,9 +131,22 @@ Set the following environment variables:
 #### Usage
 
 ##### Run the script
+
+Format example for mapping and tag settings referenced later in `certificate-meta-config.json`
+```json
+{
+  "cert-manager-generated-secret-name": {
+    "cert_name": "certificate-name-in-keyvault",
+    "tags": {
+      "owner": "name@example.com",
+      "team": "team"
+    }
+  }
+}
+```
+
 ```bash
 export AZURE_KEYVAULT_URL=https://example-kv.vault.azure.net/
-export CERTIFICATE_CONFIG_PATH=certificate-meta-config.json
 python cert-manager-kv-syncer.py
 ```
 
