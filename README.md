@@ -23,7 +23,11 @@ The tool automates the synchronization of TLS certificates from Kubernetes Secre
 - **Configurable sync interval** – Control how often sync runs (`SYNC_INTERVAL`).
 - **Automatic environment detection** – Runs seamlessly both locally and inside AKS.
 
-## Identity and permissions
+## Usage
+
+### AKS
+
+#### Identity and permissions
 
 The necessary Azure CLI steps to configure the identity and permissions required for cert-manager-kv-syncer to access Key Vault in the subscription:
 
@@ -64,9 +68,8 @@ az identity federated-credential create \
   --resource-group my-resource-group
 ```
 
-## Installation and requirements
+#### Instalation
 
-### AKS
 To install the syncer, run:
 
 ```sh
@@ -77,7 +80,7 @@ helm install cert-manager-kv-syncer cert-manager-kv-syncer \
 ```
 This command installs the syncer in the cert-manager-kv-syncer namespace using the provided configuration values.
 
-#### Upgrade
+##### Upgrade
 
 Upgrades and installs in case it does not exist.
 
@@ -96,7 +99,8 @@ The tool can also be run locally without the need for Helm installation. This al
 - **Kubernetes Access** – Ensure you have a working `kubeconfig`.
 - **Azure Key Vault Access** – Configure authentication using `DefaultAzureCredential`.
 
-#### Installation
+#### Instalation
+
 ```bash
 # Clone the repository
 git clone https://github.com/jiriwetter/cert-manager-kv-syncer.git
@@ -110,7 +114,7 @@ source venv/bin/activate  # On macOS/Linux
 pip install -r requirements.txt
 ```
 
-## Configuration
+#### Configuration
 Set the following environment variables:
 
 | Variable                  | Default                                               | Description                                                                                                                                                                    |
@@ -124,54 +128,54 @@ Set the following environment variables:
 | `DRY_RUN`                 | `False`                                               | Allows testing the synchronization process without making actual changes.                                                                                                      |
 | `CERTIFICATE_CONFIG_PATH` | `/etc/cert-manager-kv-syncer/certificate-config.json` | Path to the name mapping matrix between AKS and Key Vault                                                                                                                      |
 
-## Usage
+#### Usage
 
-### Run the script
+##### Run the script
 ```bash
 export AZURE_KEYVAULT_URL=https://example-kv.vault.azure.net/
 export CERTIFICATE_CONFIG_PATH=certificate-meta-config.json
 python cert-manager-kv-syncer.py
 ```
 
-### Example: Search in all namespaces except `kube-system`
+##### Example: Search in all namespaces except `kube-system`
 ```bash
 export SEARCH_NAMESPACES="!kube-system"
 ```
 
-### Example: Use name mapping with strict mode
+##### Example: Use name mapping with strict mode
 ```bash
 export CERTIFICATE_CONFIG_PATH=certificate-meta-config.json
 ```
 
-### Example: No mapping - sync all
+##### Example: No mapping - sync all
 ```bash
 export USE_NAME_MAPPING=False
 export STRICT_NAME_MAPPING=False
 ```
 
-### Example: Use name mapping without strict mode
+##### Example: Use name mapping without strict mode
 ```bash
 export USE_NAME_MAPPING=True
 export STRICT_NAME_MAPPING=False
 ```
 
-## Logs & Debugging
+### Logs & Debugging
 By default, logs are at `INFO` level. To enable debug mode:
 ```bash
 export DEFAULT_LOGGING_LEVEL=DEBUG
 ```
 
-## Planned Features
+### Planned Features
 - **Notifications** – Alerts via Slack, Teams, or email when certificates are updated.
 - **Automatic cleanup** – Remove stale certificates from Key Vault.
 - **Multi Key Vault support** – Allow different vaults for different certificates.
 - **Audit logging** – Store sync history in a database.
 
-## Contributing
+### Contributing
 1. Fork the repository
 2. Create a feature branch
 3. Commit changes & submit a PR
 
-## License
+### License
 MIT License
 
