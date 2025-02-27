@@ -23,7 +23,48 @@ The tool automates the synchronization of TLS certificates from Kubernetes Secre
 - **Configurable sync interval** – Control how often sync runs (`SYNC_INTERVAL`).
 - **Automatic environment detection** – Runs seamlessly both locally and inside AKS.
 
-## Installation & Requirements
+## Identity and permissions
+
+The necessary Azure CLI steps to configure the identity and permissions required for cert-manager-kv-syncer to access Key Vault in the subscription:
+
+- Authenticate and set the correct Azure subscription
+- Create a User-Assigned Managed Identity
+- Assign the identity the necessary permissions to manage Key Vault certificates
+- Enable OIDC authentication between AKS and Azure AD
+- Link the Kubernetes service account with the managed identity for secure authentication
+  
+```sh
+# Create a User-Assigned Managed Identity
+az identity create --name cert-manager-kv-syncer-umi \
+  --resource-group my-resource-group \
+  --location westeurope
+
+# Retrieve the Client ID of the identity
+az identity show --resource-group my-resource-group \
+  --name cert-manager-kv-syncer-umi \
+  --query clientId -o tsv
+
+# Assign Key Vault Certificates Officer role to the identity
+az role assignment create \
+  --assignee <CLIENT_ID> \
+  --role "Key Vault Certificates Officer" \
+  --scope "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/my-resource-group/providers/Microsoft.KeyVault/vaults/my-keyvault"
+
+# Retrieve the OIDC Issuer URL for the AKS cluster
+az aks show -g my-aks-resource-group \
+  -n my-aks-cluster \
+  --query "oidcIssuerProfile.issuerUrl" -o tsv
+
+# Create a federated credential for AKS service account authentication
+az identity federated-credential create \
+  --name "cert-manager-kv-syncer-federation" \
+  --identity-name cert-manager-kv-syncer-umi \
+  --issuer https://westeurope.oic.prod-aks.azure.com/<TENANT_ID>/<OIDC_PROVIDER_ID>/ \
+  --subject "system:serviceaccount:cert-manager-kv-syncer:cert-manager-kv-syncer" \
+  --resource-group my-resource-group
+```
+
+## Installation and requirements
 
 ### AKS
 To install the syncer, run:
