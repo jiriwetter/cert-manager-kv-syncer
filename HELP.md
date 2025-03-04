@@ -3,7 +3,8 @@
 ### The request URI contains an invalid name
 
 This error means that the name of the secret cannot be used as the name of the certificate in Azure Key Vault. In this case, it is an illegal "." character in the name.
-Object identifiers: https://learn.microsoft.com/en-us/azure/key-vault/general/about-keys-secrets-certificates?utm_source=chatgpt.com#object-identifiers
+
+*Object identifiers*: https://learn.microsoft.com/en-us/azure/key-vault/general/about-keys-secrets-certificates#object-identifiers
 ```sh
 2025-03-04 09:52:38 - INFO - Starting certificate sync process.
 2025-03-04 09:52:38 - INFO - Starting certificate sync process. Running every 300 seconds.
