@@ -147,6 +147,7 @@ def get_certificates():
 
     all_certificates = []
     for ns in namespaces_to_search:
+        logging.debug(f"Fetching certificates from namespace '{ns}'...")
         try:
             certs = custom_objects_api.list_namespaced_custom_object(
                 group="cert-manager.io",
@@ -168,7 +169,7 @@ def get_secret(namespace, secret_name):
     logging.debug(f"Fetching secret '{secret_name}' from namespace: {namespace}")
     v1 = client.CoreV1Api()
     secret = v1.read_namespaced_secret(secret_name, namespace)
-    logging.info(f"Fetched secret '{secret_name}' successfully.")
+    logging.info(f"Fetched secret '{secret_name}' successfully from namespace '{namespace}'.")
     return secret
 
 
@@ -231,7 +232,7 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
         certificate_client.import_certificate(
             certificate_name=certificate_name,
             certificate_bytes=pfx_data,
-            tags=tags  # Přidání tagů k certifikátu
+            tags=tags
         )
         return True
     except Exception as e:
@@ -248,14 +249,22 @@ def get_certificate_name(secret_name):
     - If `STRICT_NAME_MAPPING=False` → Use mapped names where available, otherwise fallback to AKS secret name.
     """
     if not USE_NAME_MAPPING:
+        logging.info(f"Name mapping disabled, using AKS secret name '{secret_name}' as Key Vault certificate name.")
         return secret_name  # Ignore mapping and use AKS secret name
 
     config_entry = CERTIFICATE_CONFIG.get(secret_name)
 
     if STRICT_NAME_MAPPING and config_entry is None:
+        logging.warning(f"Strict name mapping enabled, skipping secret '{secret_name}' as it's not in CERTIFICATE_CONFIG.")
         return None  # Strict mode → Ignore unmapped secrets
 
-    return config_entry.get("cert_name", secret_name) if config_entry else secret_name
+    if config_entry:
+        kv_cert_name = config_entry.get("cert_name", secret_name)
+        logging.info(f"Using mapped name '{kv_cert_name}' for AKS secret '{secret_name}'.")
+        return kv_cert_name
+    else:
+        logging.info(f"No mapping found for secret '{secret_name}', using AKS secret name as Key Vault certificate name.")
+        return secret_name
 
 
 def get_certificate_tags(secret_name):
@@ -268,9 +277,14 @@ def get_certificate_tags(secret_name):
     config_entry = CERTIFICATE_CONFIG.get(secret_name)
 
     if config_entry and "tags" in config_entry:
-        return config_entry["tags"]
+        tags = config_entry["tags"]
+        logging.info(f"Using custom tags from configuration for secret '{secret_name}': {tags}")
+        return tags
 
-    return DEFAULT_TAGS  # Apply default tags if no custom tags are defined
+    # Apply default tags if no custom tags are defined
+    default_tags = DEFAULT_TAGS
+    logging.info(f"Using default tags for secret '{secret_name}': {default_tags}")
+    return default_tags
 
 
 def main():
@@ -295,14 +309,14 @@ def main():
 
             tags = get_certificate_tags(secret_name)
 
-            logging.info(f"Processing certificate: {certificate['metadata']['name']} in namespace {namespace}")
+            logging.info(f"Processing certificate: {certificate['metadata']['name']} (secret: {secret_name}) in namespace {namespace}")
             secret = get_secret(namespace, secret_name)
             cert = base64.b64decode(secret.data["tls.crt"]).decode("utf-8")
             key = base64.b64decode(secret.data["tls.key"]).decode("utf-8")
 
-            logging.debug(f"Uploading certificate {certificate_name} to Key Vault with tags {tags}...")
+            logging.debug(f"Uploading certificate {certificate_name} (AKS secret: '{secret_name}') to Key Vault with tags {tags}...")
             if upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
-                logging.info(f"Certificate {certificate_name} successfully uploaded to Key Vault with tags {tags}.")
+                logging.info(f"Certificate {certificate_name} (AKS secret: '{secret_name}') successfully uploaded to Key Vault with tags {tags}.")
 
         logging.info(f"Sync completed. Sleeping for {SYNC_INTERVAL} seconds.")
         sleep(SYNC_INTERVAL)
