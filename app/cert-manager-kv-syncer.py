@@ -277,7 +277,7 @@ def main():
     vault_url = os.getenv("AZURE_KEYVAULT_URL")
     if not vault_url:
         logging.error("Missing environment variable AZURE_KEYVAULT_URL. Exiting.")
-        return
+        exit(1)
 
     logging.info(f"Starting certificate sync process. Running every {SYNC_INTERVAL} seconds.")
 
