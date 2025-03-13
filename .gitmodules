@@ -1,0 +1,3 @@
+[submodule "submodules/sre.cert-manager-kv-syncer"]
+	path = submodules/sre.cert-manager-kv-syncer
+	url = https://github.com/elkjopnordic/sre.cert-manager-kv-syncer.git
