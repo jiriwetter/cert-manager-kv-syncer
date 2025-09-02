@@ -16,7 +16,12 @@ resources:
      memory: 128Mi
 
 azure:
-  keyVaultUrl: "https://example-kv.vault.azure.net/"
+  # Multiple Key Vault configuration
+  keyVaults:
+    example-kv-a:
+      url: "https://example-kv-a.vault.azure.net/"
+    example-kv-b:
+      url: "https://example-kv-b.vault.azure.net/"
 
 workloadIdentity:
     clientId: "a3d7f8e1-5c42-4b99-b8d2-7e63c9a1f4b0"
@@ -40,6 +45,8 @@ mapping:
 
 certificateConfig:
   cert-manager-generated-secret-name:
+    keyVaults:
+      - "example-kv-a"
     cert_name: "certificate-name-in-keyvault"
     tags:
       owner: "name@example.com"
