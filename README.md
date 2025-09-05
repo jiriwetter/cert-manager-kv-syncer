@@ -163,9 +163,10 @@ Format example for mapping and tag settings referenced later in `certificate-met
 ```json
 {
   "cert-manager-generated-secret-name": {
-    keyVaults:
-      - "common-kv"
-      - "backup-kv"
+    "keyVaults": [
+      "common-kv",
+      "backup-kv"
+    ],
     "cert_name": "certificate-name-in-keyvault",
     "tags": {
       "owner": "name@example.com",
