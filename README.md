@@ -169,6 +169,7 @@ export CERTIFICATE_CONFIG_PATH="env-specific-certificate-meta-config.json"
 export SYNC_INTERVAL=300
 export DRY_RUN=false
 ```
+Always make sure you are connected to the correct AKS cluster before running the syncer!
 
 ```bash
 source env.sh
