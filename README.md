@@ -24,6 +24,7 @@ _Note_: AKS running diagram
 
 ## Features
 - **Automatic synchronization** – Periodically syncs Kubernetes secrets to Azure Key Vault.
+- **Multiple Key Vault support** – Can be configured to work with different Key Vaults.
 - **Namespace filtering** – Define where to search for certificates using `SEARCH_NAMESPACES`.
 - **Exclusion support** – Exclude namespaces using `!namespace` syntax.
 - **Custom certificate mapping** – Rename certificates before storing them in Key Vault.
@@ -124,11 +125,11 @@ pip install -r requirements.txt
 ```
 
 #### Configuration
-Set the following environment variables:
+
+##### Basic Variables
 
 | Variable                  | Default                                               | Description                                                                                                                                                                    |
 |---------------------------|-------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `AZURE_KEYVAULT_URL`      | *Required*                                            | Azure Key Vault URL                                                                                                                                                            |
 | `SYNC_INTERVAL`           | `300`                                                 | Sync interval in seconds                                                                                                                                                       |
 | `SEARCH_NAMESPACES`       | `""`                                                  | Namespaces to search (`"ingresscontrollers,production"` or `"!production"` or `""` for all)                                                                                    |
 | `USE_NAME_MAPPING`        | `True`                                                | Maps AKS secret names to custom Azure Key Vault certificate names using a predefined matrix. Those without mapping set will be transferred with the same name and default tag. |
@@ -136,6 +137,48 @@ Set the following environment variables:
 | `DEFAULT_TAGS`            | `{created-by: cert-manager-kv-syncer}`                | Tags applied to certificates. Currenctly hardcoded.                                                                                                                            |
 | `DRY_RUN`                 | `False`                                               | Allows testing the synchronization process without making actual changes.                                                                                                      |
 | `CERTIFICATE_CONFIG_PATH` | `/etc/cert-manager-kv-syncer/certificate-config.json` | Path to the name mapping matrix between AKS and Key Vault                                                                                                                      |
+
+##### Key Vault URL variables
+
+The application supports working with multiple Azure Key Vaults simultaneously. Key Vault URLs are configured using variables in the format:
+
+| Variable                  | 	Default   | 	Description                                                                                                                                                                 |
+|---------------------------|------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| KEYVAULT_<VAULT_NAME>_URL | 	Required	 | Azure Key Vault URL. There can be multiple variables of this type - just change `<VAULT_NAME>`. Rules: UPPERCASE, underscores instead of dashes (e.g., common-kv → COMMON_KV). |
+
+Examples:
+
+```yaml
+# Configuration for multiple Key Vaults
+KEYVAULT_COMMON_KV_URL="https://common-certificate-kv.vault.azure.net/"
+KEYVAULT_BACKUP_KV_URL="https://backup-certificate-kv.vault.azure.net/"
+KEYVAULT_DR_KV_URL="https://dr-certificate-kv.vault.azure.net/"
+
+# Corresponding configuration in values.yaml
+azure:
+  keyVaults:
+    common-kv:
+      url: "https://common-certificate-kv.vault.azure.net/"
+    backup-kv:
+      url: "https://backup-certificate-kv.vault.azure.net/"
+    dr-kv:
+      url: "https://dr-certificate-kv.vault.azure.net/"
+```
+
+Assigning certificates to Key Vaults:
+
+```yaml
+# Corresponding configuration in values.yaml
+certificateConfig:
+  acme-crt-secret:
+    keyVaults: 
+      - "common-kv"           # Only common Key Vault
+      - "backup-kv"           # And also backup Key Vault
+    cert_name: "certificate-name-in-keyvault"
+    tags:
+      owner: "name@example.com"
+      team: "team"
+```
 
 #### Usage
 
@@ -145,6 +188,9 @@ Format example for mapping and tag settings referenced later in `certificate-met
 ```json
 {
   "cert-manager-generated-secret-name": {
+    keyVaults:
+      - "common-kv"
+      - "backup-kv"
     "cert_name": "certificate-name-in-keyvault",
     "tags": {
       "owner": "name@example.com",
@@ -157,7 +203,8 @@ Format example for mapping and tag settings referenced later in `certificate-met
 ##### Example: Preparing env file for specific environment and Key Vault
 ```bash
 #!/usr/bin/env bash
-export AZURE_KEYVAULT_URL="https://example-kv.vault.azure.net/"
+export KEYVAULT_COMMON_KV_URL="https://common-certificate-kv.vault.azure.net/"
+export KEYVAULT_BACKUP_KV_URL="https://backup-certificate-kv.vault.azure.net/"
 export USE_NAME_MAPPING=true
 export STRICT_NAME_MAPPING=true
 export CERTIFICATE_CONFIG_PATH="env-specific-certificate-meta-config.json"
