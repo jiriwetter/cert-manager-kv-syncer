@@ -269,7 +269,7 @@ def get_certificate_name(secret_name):
 
 def get_key_vaults_for_secret(certificate_config, secret_name):
     """
-    Returns list of Key Vault names for a given secret based on configuration.
+    Returns list of Key Vault URLs for a given secret based on configuration.
     Supports both string (single KV) and list (multiple KVs) configurations.
     """
     config_entry = certificate_config.get(secret_name)
@@ -281,7 +281,7 @@ def get_key_vaults_for_secret(certificate_config, secret_name):
     if not key_vaults:
         return []
 
-    # Normalize to a list - if it is a string, convert to a list with one element
+    # Normalize to list - if it's a string, convert to single-item list
     if isinstance(key_vaults, str):
         return [key_vaults]
     elif isinstance(key_vaults, list):
@@ -312,19 +312,6 @@ def get_certificate_tags(secret_name):
 
 
 def main():
-    # Read Key Vault configuration from environment variables
-    key_vault_urls = {}
-    for env_var in os.environ:
-        if env_var.startswith("KEYVAULT_") and env_var.endswith("_URL"):
-            key_vault_name = env_var[9:-4].lower().replace('_', '-')  # Convert KEYVAULT_COMMON_KV_URL -> common-kv
-            key_vault_urls[key_vault_name] = os.getenv(env_var)
-
-    if not key_vault_urls:
-        logging.error("No Key Vault URLs configured. Set environment variables in format KEYVAULT_<NAME>_URL")
-        exit(1)
-
-    logging.info(f"Configured Key Vaults: {list(key_vault_urls.keys())}")
-
     logging.info(f"Starting certificate sync process. Running every {SYNC_INTERVAL} seconds.")
 
     while True:
@@ -339,32 +326,26 @@ def main():
                 logging.warning(f"Skipping secret '{secret_name}' because it is not in CERTIFICATE_CONFIG.")
                 continue
 
-            # Get the list of Key Vaults for this secret
-            key_vault_names = get_key_vaults_for_secret(CERTIFICATE_CONFIG, secret_name)
-            if not key_vault_names:
+            # Get list of Key Vault URLs for this secret
+            key_vault_urls = get_key_vaults_for_secret(CERTIFICATE_CONFIG, secret_name)
+            if not key_vault_urls:
                 logging.warning(f"No Key Vault specified for secret '{secret_name}', skipping.")
                 continue
 
             tags = get_certificate_tags(secret_name)
 
-            logging.info(f"Processing certificate: {certificate['metadata']['name']} (secret: {secret_name}) in namespace {namespace} for Key Vaults: {key_vault_names}")
+            logging.info(f"Processing certificate: {certificate['metadata']['name']} (secret: {secret_name}) in namespace {namespace} for Key Vaults: {key_vault_urls}")
             secret = get_secret(namespace, secret_name)
             cert = base64.b64decode(secret.data["tls.crt"]).decode("utf-8")
             key = base64.b64decode(secret.data["tls.key"]).decode("utf-8")
 
-            # Processing for each Key Vault
-            for key_vault_name in key_vault_names:
-                vault_url = key_vault_urls.get(key_vault_name)
-                if not vault_url:
-                    logging.warning(
-                        f"Key Vault '{key_vault_name}' not configured for secret '{secret_name}', skipping.")
-                    continue
-
-                logging.debug(f"Uploading certificate {certificate_name} to Key Vault {key_vault_name} with tags {tags}...")
+            # Process for each Key Vault
+            for vault_url in key_vault_urls:
+                logging.debug(f"Uploading certificate {certificate_name} to Key Vault {vault_url} with tags {tags}...")
                 if upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
-                    logging.info(f"Certificate {certificate_name} successfully uploaded to Key Vault {key_vault_name} with tags {tags}.")
+                    logging.info(f"Certificate {certificate_name} successfully uploaded to Key Vault {vault_url} with tags {tags}.")
                 else:
-                    logging.error(f"Failed to upload certificate {certificate_name} to Key Vault {key_vault_name}")
+                    logging.error(f"Failed to upload certificate {certificate_name} to Key Vault {vault_url}")
 
         logging.info(f"Sync completed. Sleeping for {SYNC_INTERVAL} seconds.")
         sleep(SYNC_INTERVAL)

@@ -21,9 +21,6 @@ spec:
         - name: cert-manager-kv-syncer
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          envFrom:
-            - configMapRef:
-                name: {{ .Release.Name }}-keyvault-config
           env:
             - name: DRY_RUN
               value: "{{ .Values.sync.dryRun }}"

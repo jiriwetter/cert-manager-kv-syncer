@@ -5,7 +5,7 @@
 image:
   repository: docker.io/jiriwetter/cert-manager-kv-syncer
   pullPolicy: IfNotPresent
-  tag: "v0.1.0"
+  tag: "v0.1.1"
 
 resources:
    limits:
@@ -14,14 +14,6 @@ resources:
    requests:
      cpu: 50m
      memory: 128Mi
-
-azure:
-  # Multiple Key Vault configuration
-  keyVaults:
-    example-kv-a:
-      url: "https://example-kv-a.vault.azure.net/"
-    example-kv-b:
-      url: "https://example-kv-b.vault.azure.net/"
 
 workloadIdentity:
     clientId: "a3d7f8e1-5c42-4b99-b8d2-7e63c9a1f4b0"
@@ -41,12 +33,13 @@ search:
 
 mapping:
   useNameMapping: "true"  # Enable name mapping (true/false)
-  strictNameMapping: "true"  # Enforce strict name mapping (true/false)
+  strictNameMapping: "true"  # Enforce strict name mapping (true/false) and log warnings for unmapped secrets
 
 certificateConfig:
   cert-manager-generated-secret-name:
     keyVaults:
-      - "example-kv-a"
+      - "https://prod-kv.vault.azure.net/"
+      - "https://backup-kv.vault.azure.net/"
     cert_name: "certificate-name-in-keyvault"
     tags:
       owner: "name@example.com"
