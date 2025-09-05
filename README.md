@@ -138,22 +138,6 @@ pip install -r requirements.txt
 | `DRY_RUN`                 | `False`                                               | Allows testing the synchronization process without making actual changes.                                                                                                      |
 | `CERTIFICATE_CONFIG_PATH` | `/etc/cert-manager-kv-syncer/certificate-config.json` | Path to the name mapping matrix between AKS and Key Vault                                                                                                                      |
 
-##### Key Vault URL variables
-
-The application supports working with multiple Azure Key Vaults simultaneously. Key Vault URLs are configured using variables in the format:
-
-| Variable                  | 	Default   | 	Description                                                                                                                                                                 |
-|---------------------------|------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `KEYVAULT_<VAULT_NAME>_URL` | 	Required	 | Azure Key Vault URL. There can be multiple variables of this type - just change `<VAULT_NAME>`. Rules: UPPERCASE, underscores instead of dashes (e.g., common-kv → COMMON_KV). |
-
-Examples:
-
-```yaml
-# Configuration for multiple Key Vaults
-KEYVAULT_COMMON_KV_URL="https://common-certificate-kv.vault.azure.net/"
-KEYVAULT_BACKUP_KV_URL="https://backup-certificate-kv.vault.azure.net/"
-KEYVAULT_DR_KV_URL="https://dr-certificate-kv.vault.azure.net/"
-```
 
 #### Usage
 
@@ -164,8 +148,8 @@ Format example for mapping and tag settings referenced later in `certificate-met
 {
   "cert-manager-generated-secret-name": {
     "keyVaults": [
-      "common-kv",
-      "backup-kv"
+      "https://common-kv.vault.azure.net/",
+      "https://backup-kv.vault.azure.net/"
     ],
     "cert_name": "certificate-name-in-keyvault",
     "tags": {
@@ -179,8 +163,6 @@ Format example for mapping and tag settings referenced later in `certificate-met
 ##### Example: Preparing env file for specific environment and Key Vault
 ```bash
 #!/usr/bin/env bash
-export KEYVAULT_COMMON_KV_URL="https://common-certificate-kv.vault.azure.net/"
-export KEYVAULT_BACKUP_KV_URL="https://backup-certificate-kv.vault.azure.net/"
 export USE_NAME_MAPPING=true
 export STRICT_NAME_MAPPING=true
 export CERTIFICATE_CONFIG_PATH="env-specific-certificate-meta-config.json"

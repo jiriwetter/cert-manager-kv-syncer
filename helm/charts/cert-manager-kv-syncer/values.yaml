@@ -5,7 +5,7 @@
 image:
   repository: docker.io/jiriwetter/cert-manager-kv-syncer
   pullPolicy: IfNotPresent
-  tag: "v0.1.1"
+  tag: "v0.1.2"
 
 resources:
    limits:
@@ -15,10 +15,11 @@ resources:
      cpu: 50m
      memory: 128Mi
 
-workloadIdentity:
-    clientId: "a3d7f8e1-5c42-4b99-b8d2-7e63c9a1f4b0"
-    subscriptionId: "f8b6d3e2-1a4c-47e8-92b1-9c6a5d8e3f70"
-    tenantId: "c2e7a9b5-3d81-4f9d-a265-7d94e1f2b6c3"
+azure:
+  workloadIdentity:
+      clientId: "a3d7f8e1-5c42-4b99-b8d2-7e63c9a1f4b0"
+      subscriptionId: "f8b6d3e2-1a4c-47e8-92b1-9c6a5d8e3f70"
+      tenantId: "c2e7a9b5-3d81-4f9d-a265-7d94e1f2b6c3"
 
 sync:
   dryRun: "true"
