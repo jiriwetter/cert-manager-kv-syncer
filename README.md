@@ -144,7 +144,7 @@ The application supports working with multiple Azure Key Vaults simultaneously. 
 
 | Variable                  | 	Default   | 	Description                                                                                                                                                                 |
 |---------------------------|------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| KEYVAULT_<VAULT_NAME>_URL | 	Required	 | Azure Key Vault URL. There can be multiple variables of this type - just change `<VAULT_NAME>`. Rules: UPPERCASE, underscores instead of dashes (e.g., common-kv → COMMON_KV). |
+| `KEYVAULT_<VAULT_NAME>_URL` | 	Required	 | Azure Key Vault URL. There can be multiple variables of this type - just change `<VAULT_NAME>`. Rules: UPPERCASE, underscores instead of dashes (e.g., common-kv → COMMON_KV). |
 
 Examples:
 
@@ -153,31 +153,6 @@ Examples:
 KEYVAULT_COMMON_KV_URL="https://common-certificate-kv.vault.azure.net/"
 KEYVAULT_BACKUP_KV_URL="https://backup-certificate-kv.vault.azure.net/"
 KEYVAULT_DR_KV_URL="https://dr-certificate-kv.vault.azure.net/"
-
-# Corresponding configuration in values.yaml
-azure:
-  keyVaults:
-    common-kv:
-      url: "https://common-certificate-kv.vault.azure.net/"
-    backup-kv:
-      url: "https://backup-certificate-kv.vault.azure.net/"
-    dr-kv:
-      url: "https://dr-certificate-kv.vault.azure.net/"
-```
-
-Assigning certificates to Key Vaults:
-
-```yaml
-# Corresponding configuration in values.yaml
-certificateConfig:
-  acme-crt-secret:
-    keyVaults: 
-      - "common-kv"           # Only common Key Vault
-      - "backup-kv"           # And also backup Key Vault
-    cert_name: "certificate-name-in-keyvault"
-    tags:
-      owner: "name@example.com"
-      team: "team"
 ```
 
 #### Usage
