@@ -22,8 +22,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: AZURE_KEYVAULT_URL
-              value: "{{ .Values.azure.keyVaultUrl }}"
             - name: DRY_RUN
               value: "{{ .Values.sync.dryRun }}"
             - name: SYNC_INTERVAL

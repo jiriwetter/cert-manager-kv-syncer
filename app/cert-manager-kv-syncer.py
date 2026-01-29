@@ -267,6 +267,30 @@ def get_certificate_name(secret_name):
         return secret_name
 
 
+def get_key_vaults_for_secret(certificate_config, secret_name):
+    """
+    Returns list of Key Vault URLs for a given secret based on configuration.
+    Supports both string (single KV) and list (multiple KVs) configurations.
+    """
+    config_entry = certificate_config.get(secret_name)
+    if not config_entry:
+        return []
+
+    key_vaults = config_entry.get("keyVaults")
+
+    if not key_vaults:
+        return []
+
+    # Normalize to list - if it's a string, convert to single-item list
+    if isinstance(key_vaults, str):
+        return [key_vaults]
+    elif isinstance(key_vaults, list):
+        return key_vaults
+    else:
+        logging.warning(f"Invalid keyVaults format for secret '{secret_name}': {type(key_vaults)}")
+        return []
+
+
 def get_certificate_tags(secret_name):
     """
     Retrieves the tags for a given certificate.
@@ -288,11 +312,6 @@ def get_certificate_tags(secret_name):
 
 
 def main():
-    vault_url = os.getenv("AZURE_KEYVAULT_URL")
-    if not vault_url:
-        logging.error("Missing environment variable AZURE_KEYVAULT_URL. Exiting.")
-        exit(1)
-
     logging.info(f"Starting certificate sync process. Running every {SYNC_INTERVAL} seconds.")
 
     while True:
@@ -307,16 +326,26 @@ def main():
                 logging.warning(f"Skipping secret '{secret_name}' because it is not in CERTIFICATE_CONFIG.")
                 continue
 
+            # Get list of Key Vault URLs for this secret
+            key_vault_urls = get_key_vaults_for_secret(CERTIFICATE_CONFIG, secret_name)
+            if not key_vault_urls:
+                logging.warning(f"No Key Vault specified for secret '{secret_name}', skipping.")
+                continue
+
             tags = get_certificate_tags(secret_name)
 
-            logging.info(f"Processing certificate: {certificate['metadata']['name']} (secret: {secret_name}) in namespace {namespace}")
+            logging.info(f"Processing certificate: {certificate['metadata']['name']} (secret: {secret_name}) in namespace {namespace} for Key Vaults: {key_vault_urls}")
             secret = get_secret(namespace, secret_name)
             cert = base64.b64decode(secret.data["tls.crt"]).decode("utf-8")
             key = base64.b64decode(secret.data["tls.key"]).decode("utf-8")
 
-            logging.debug(f"Uploading certificate {certificate_name} (AKS secret: '{secret_name}') to Key Vault with tags {tags}...")
-            if upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
-                logging.info(f"Certificate {certificate_name} (AKS secret: '{secret_name}') successfully uploaded to Key Vault with tags {tags}.")
+            # Process for each Key Vault
+            for vault_url in key_vault_urls:
+                logging.debug(f"Uploading certificate {certificate_name} to Key Vault {vault_url} with tags {tags}...")
+                if upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
+                    logging.info(f"Certificate {certificate_name} successfully uploaded to Key Vault {vault_url} with tags {tags}.")
+                else:
+                    logging.error(f"Failed to upload certificate {certificate_name} to Key Vault {vault_url}")
 
         logging.info(f"Sync completed. Sleeping for {SYNC_INTERVAL} seconds.")
         sleep(SYNC_INTERVAL)

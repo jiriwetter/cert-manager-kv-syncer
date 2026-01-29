@@ -5,7 +5,7 @@
 image:
   repository: docker.io/jiriwetter/cert-manager-kv-syncer
   pullPolicy: IfNotPresent
-  tag: "v0.1.0"
+  tag: "v0.1.2"
 
 resources:
    limits:
@@ -15,31 +15,43 @@ resources:
      cpu: 50m
      memory: 128Mi
 
+# Under the azure block, we define the identity that performs the sync. It is important to note that this single
+# Managed Identity must have the Key Vault Certificates Officer role assigned to all target Key Vaults listed in,
+# certificateConfig even if they are spread across different subscriptions.
 azure:
-  keyVaultUrl: "https://example-kv.vault.azure.net/"
-
-workloadIdentity:
-    clientId: "a3d7f8e1-5c42-4b99-b8d2-7e63c9a1f4b0"
-    subscriptionId: "f8b6d3e2-1a4c-47e8-92b1-9c6a5d8e3f70"
-    tenantId: "c2e7a9b5-3d81-4f9d-a265-7d94e1f2b6c3"
+  workloadIdentity:
+      clientId: "a3d7f8e1-5c42-4b99-b8d2-7e63c9a1f4b0"
+      subscriptionId: "f8b6d3e2-1a4c-47e8-92b1-9c6a5d8e3f70"
+      tenantId: "c2e7a9b5-3d81-4f9d-a265-7d94e1f2b6c3"
 
 sync:
   dryRun: "true"
   interval: "300"
 
 logging:
-  defaultLevel: "INFO"  # Default logging level (DEBUG, INFO, WARNING, ERROR)
-  azureLevel: "WARNING"  # Logging level for Azure SDK (DEBUG, INFO, WARNING, ERROR)
+  # Default logging level (DEBUG, INFO, WARNING, ERROR)
+  defaultLevel: "INFO"
+  # Logging level for Azure SDK (DEBUG, INFO, WARNING, ERROR)
+  azureLevel: "WARNING"
 
 search:
+  # Tells exactly which Kubernetes namespace to "watch" for cert-manager certificates that need to be pushed to Azure.
   namespaces: "namespace-xy"
 
 mapping:
-  useNameMapping: "true"  # Enable name mapping (true/false)
-  strictNameMapping: "true"  # Enforce strict name mapping (true/false)
+  # Enable name mapping (true/false)
+  useNameMapping: "true"
+  # Enforce strict name mapping (true/false) and log warnings for unmapped secrets.
+  # By setting strictNameMapping: "true", you ensure a controlled environment.
+  # The syncer will ignore any secrets in the namespace that aren't explicitly defined in your certificateConfig.
+  # This prevents accidental synchronization of sensitive internal secrets that aren't meant for Key Vault.
+  strictNameMapping: "true"
 
 certificateConfig:
   cert-manager-generated-secret-name:
+    keyVaults:
+      - "https://prod-kv.vault.azure.net/"
+      - "https://backup-kv.vault.azure.net/"
     cert_name: "certificate-name-in-keyvault"
     tags:
       owner: "name@example.com"

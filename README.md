@@ -24,6 +24,7 @@ _Note_: AKS running diagram
 
 ## Features
 - **Automatic synchronization** – Periodically syncs Kubernetes secrets to Azure Key Vault.
+- **Multiple Key Vault support** – Can be configured to work with different Key Vaults.
 - **Namespace filtering** – Define where to search for certificates using `SEARCH_NAMESPACES`.
 - **Exclusion support** – Exclude namespaces using `!namespace` syntax.
 - **Custom certificate mapping** – Rename certificates before storing them in Key Vault.
@@ -124,11 +125,11 @@ pip install -r requirements.txt
 ```
 
 #### Configuration
-Set the following environment variables:
+
+##### Basic Variables
 
 | Variable                  | Default                                               | Description                                                                                                                                                                    |
 |---------------------------|-------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `AZURE_KEYVAULT_URL`      | *Required*                                            | Azure Key Vault URL                                                                                                                                                            |
 | `SYNC_INTERVAL`           | `300`                                                 | Sync interval in seconds                                                                                                                                                       |
 | `SEARCH_NAMESPACES`       | `""`                                                  | Namespaces to search (`"ingresscontrollers,production"` or `"!production"` or `""` for all)                                                                                    |
 | `USE_NAME_MAPPING`        | `True`                                                | Maps AKS secret names to custom Azure Key Vault certificate names using a predefined matrix. Those without mapping set will be transferred with the same name and default tag. |
@@ -136,6 +137,7 @@ Set the following environment variables:
 | `DEFAULT_TAGS`            | `{created-by: cert-manager-kv-syncer}`                | Tags applied to certificates. Currenctly hardcoded.                                                                                                                            |
 | `DRY_RUN`                 | `False`                                               | Allows testing the synchronization process without making actual changes.                                                                                                      |
 | `CERTIFICATE_CONFIG_PATH` | `/etc/cert-manager-kv-syncer/certificate-config.json` | Path to the name mapping matrix between AKS and Key Vault                                                                                                                      |
+
 
 #### Usage
 
@@ -145,6 +147,10 @@ Format example for mapping and tag settings referenced later in `certificate-met
 ```json
 {
   "cert-manager-generated-secret-name": {
+    "keyVaults": [
+      "https://common-kv.vault.azure.net/",
+      "https://backup-kv.vault.azure.net/"
+    ],
     "cert_name": "certificate-name-in-keyvault",
     "tags": {
       "owner": "name@example.com",
@@ -157,13 +163,13 @@ Format example for mapping and tag settings referenced later in `certificate-met
 ##### Example: Preparing env file for specific environment and Key Vault
 ```bash
 #!/usr/bin/env bash
-export AZURE_KEYVAULT_URL="https://example-kv.vault.azure.net/"
 export USE_NAME_MAPPING=true
 export STRICT_NAME_MAPPING=true
 export CERTIFICATE_CONFIG_PATH="env-specific-certificate-meta-config.json"
 export SYNC_INTERVAL=300
 export DRY_RUN=false
 ```
+Always make sure you are connected to the correct AKS cluster before running the syncer!
 
 ```bash
 source env.sh
@@ -201,7 +207,6 @@ export DEFAULT_LOGGING_LEVEL=DEBUG
 ### Planned Features
 - **Notifications** – Alerts via Slack, Teams, or email when certificates are updated.
 - **Automatic cleanup** – Remove stale certificates from Key Vault.
-- **Multi Key Vault support** – Allow different vaults for different certificates.
 - **Audit logging** – Store sync history in a database.
 
 ### Contributing
