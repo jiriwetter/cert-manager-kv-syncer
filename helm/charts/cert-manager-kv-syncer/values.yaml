@@ -15,6 +15,9 @@ resources:
      cpu: 50m
      memory: 128Mi
 
+# Under the azure block, we define the identity that performs the sync. It is important to note that this single
+# Managed Identity must have the Key Vault Certificates Officer role assigned to all target Key Vaults listed in,
+# certificateConfig even if they are spread across different subscriptions.
 azure:
   workloadIdentity:
       clientId: "a3d7f8e1-5c42-4b99-b8d2-7e63c9a1f4b0"
@@ -38,7 +41,10 @@ search:
 mapping:
   # Enable name mapping (true/false)
   useNameMapping: "true"
-  # Enforce strict name mapping (true/false) and log warnings for unmapped secrets
+  # Enforce strict name mapping (true/false) and log warnings for unmapped secrets.
+  # By setting strictNameMapping: "true", you ensure a controlled environment.
+  # The syncer will ignore any secrets in the namespace that aren't explicitly defined in your certificateConfig.
+  # This prevents accidental synchronization of sensitive internal secrets that aren't meant for Key Vault.
   strictNameMapping: "true"
 
 certificateConfig:
