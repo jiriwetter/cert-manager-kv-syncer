@@ -26,15 +26,20 @@ sync:
   interval: "300"
 
 logging:
-  defaultLevel: "INFO"  # Default logging level (DEBUG, INFO, WARNING, ERROR)
-  azureLevel: "WARNING"  # Logging level for Azure SDK (DEBUG, INFO, WARNING, ERROR)
+  # Default logging level (DEBUG, INFO, WARNING, ERROR)
+  defaultLevel: "INFO"
+  # Logging level for Azure SDK (DEBUG, INFO, WARNING, ERROR)
+  azureLevel: "WARNING"
 
 search:
+  # Tells exactly which Kubernetes namespace to "watch" for cert-manager certificates that need to be pushed to Azure.
   namespaces: "namespace-xy"
 
 mapping:
-  useNameMapping: "true"  # Enable name mapping (true/false)
-  strictNameMapping: "true"  # Enforce strict name mapping (true/false) and log warnings for unmapped secrets
+  # Enable name mapping (true/false)
+  useNameMapping: "true"
+  # Enforce strict name mapping (true/false) and log warnings for unmapped secrets
+  strictNameMapping: "true"
 
 certificateConfig:
   cert-manager-generated-secret-name:
