@@ -1,6 +1,6 @@
-<div style="text-align: center;">
+<p align="center">
   <img src="assets/logo.png" height="256" width="256" alt="cert-manager-kv-syncer project logo" />
-</div>
+</p>
 
 
 # cert-manager-kv-syncer
