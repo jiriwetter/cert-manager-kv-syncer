@@ -5,6 +5,7 @@ from time import sleep
 from kubernetes import client, config
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.certificates import CertificateClient
+from azure.core.exceptions import ResourceNotFoundError, HttpResponseError
 from cryptography.hazmat.primitives.serialization import pkcs12, load_pem_private_key, NoEncryption
 from cryptography.hazmat.primitives.hashes import SHA1
 from cryptography.x509 import load_pem_x509_certificates
@@ -65,6 +66,14 @@ if USE_NAME_MAPPING:
         except json.JSONDecodeError as e:
             logging.error(f"Invalid JSON in configuration file: {e}")
             exit(1)
+
+    # Validate that the loaded config is a dictionary
+    if not isinstance(CERTIFICATE_CONFIG, dict):
+        logging.error(
+            f"Invalid certificate configuration: expected a JSON object (dict), "
+            f"got {type(CERTIFICATE_CONFIG).__name__}. Check your configuration file."
+        )
+        exit(1)
 
 # Suppress general Azure SDK logs unless explicitly enabled
 logging.getLogger("azure").setLevel(getattr(logging, AZURE_LOGGING_LEVEL, logging.WARNING))
@@ -179,6 +188,15 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
     If DRY_RUN is enabled, log the intended action but do not upload.
     """
     logging.debug(f"Starting upload process for certificate: {certificate_name} with tags: {tags}")
+
+    # Validate Key Vault URL format (Azure public cloud only)
+    if not vault_url or ".vault.azure.net" not in vault_url.lower():
+        logging.error(
+            f"Invalid Key Vault URL '{vault_url}' for certificate '{certificate_name}' "
+            f"— expected format https://<name>.vault.azure.net/"
+        )
+        return False
+
     credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
     certificate_client = CertificateClient(vault_url=vault_url, credential=credential)
 
@@ -211,8 +229,14 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
             logging.info(
                 f"Certificate {certificate_name} already exists in Key Vault with the same thumbprint. Skipping upload.")
             return False
-    except Exception:
-        logging.warning(f"Certificate {certificate_name} not found in Key Vault. Proceeding with upload...")
+    except ResourceNotFoundError:
+        logging.info(f"Certificate {certificate_name} not found in Key Vault. Proceeding with upload...")
+    except HttpResponseError as e:
+        logging.error(
+            f"Failed to check certificate '{certificate_name}' in Key Vault '{vault_url}': "
+            f"{e.status_code} - {e.message}"
+        )
+        return False
 
     if DRY_RUN:
         logging.info(f"[DRY RUN] Would upload certificate '{certificate_name}' to Key Vault with tags: {tags}")
@@ -235,8 +259,14 @@ def upload_to_key_vault(vault_url, certificate_name, cert, key, tags):
             tags=tags
         )
         return True
+    except HttpResponseError as e:
+        logging.error(
+            f"Failed to upload certificate '{certificate_name}' to Key Vault '{vault_url}': "
+            f"{e.status_code} - {e.message}"
+        )
+        return False
     except Exception as e:
-        logging.error(f"Failed to upload certificate '{certificate_name}' to Key Vault: {str(e)}")
+        logging.error(f"Failed to upload certificate '{certificate_name}' to Key Vault '{vault_url}': {str(e)}")
         return False
 
 
@@ -251,6 +281,10 @@ def get_certificate_name(secret_name):
     if not USE_NAME_MAPPING:
         logging.info(f"Name mapping disabled, using AKS secret name '{secret_name}' as Key Vault certificate name.")
         return secret_name  # Ignore mapping and use AKS secret name
+
+    if CERTIFICATE_CONFIG is None:
+        logging.error("CERTIFICATE_CONFIG is None. Configuration was not loaded properly.")
+        return None
 
     config_entry = CERTIFICATE_CONFIG.get(secret_name)
 
@@ -272,6 +306,10 @@ def get_key_vaults_for_secret(certificate_config, secret_name):
     Returns list of Key Vault URLs for a given secret based on configuration.
     Supports both string (single KV) and list (multiple KVs) configurations.
     """
+    if certificate_config is None:
+        logging.error("Certificate configuration is None, cannot determine Key Vault URLs.")
+        return []
+
     config_entry = certificate_config.get(secret_name)
     if not config_entry:
         return []
@@ -298,6 +336,10 @@ def get_certificate_tags(secret_name):
     - If a mapping exists in `CERTIFICATE_CONFIG`, use those tags.
     - Otherwise, apply `DEFAULT_TAGS`.
     """
+    if CERTIFICATE_CONFIG is None:
+        logging.warning("CERTIFICATE_CONFIG is None, using default tags.")
+        return DEFAULT_TAGS
+
     config_entry = CERTIFICATE_CONFIG.get(secret_name)
 
     if config_entry and "tags" in config_entry:
